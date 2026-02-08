@@ -44,3 +44,12 @@ export interface DatabaseMatch {
   created_at?: string
   updated_at?: string
 }
+
+export interface DatabaseResetHistory {
+  id: string
+  tournament_id: string
+  latitude: number | null
+  longitude: number | null
+  location_accuracy: number | null
+  reset_at: string
+}

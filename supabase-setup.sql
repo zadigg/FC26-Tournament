@@ -74,3 +74,26 @@ CREATE TRIGGER update_tournaments_updated_at BEFORE UPDATE ON tournaments
 
 CREATE TRIGGER update_matches_updated_at BEFORE UPDATE ON matches
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Reset history table (tracks who reset the tournament)
+-- Note: tournament_id is TEXT to match our app's tournament IDs (which are stored as TEXT)
+-- We don't use a foreign key constraint to avoid type mismatch issues
+-- (tournaments.id might be UUID or TEXT depending on how it was created)
+CREATE TABLE IF NOT EXISTS reset_history (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
+  tournament_id TEXT NOT NULL, -- Store as TEXT to match our app's ID format
+  latitude DECIMAL(10, 8),
+  longitude DECIMAL(11, 8),
+  location_accuracy DECIMAL(10, 2),
+  reset_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create index for reset history queries
+CREATE INDEX IF NOT EXISTS idx_reset_history_tournament_id ON reset_history(tournament_id);
+CREATE INDEX IF NOT EXISTS idx_reset_history_reset_at ON reset_history(reset_at DESC);
+
+-- Enable RLS for reset_history
+ALTER TABLE reset_history ENABLE ROW LEVEL SECURITY;
+
+-- Create policy to allow all operations (public access)
+CREATE POLICY "Allow all operations on reset_history" ON reset_history FOR ALL USING (true) WITH CHECK (true);

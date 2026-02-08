@@ -75,17 +75,27 @@ export function computeStandings(players: Player[], matches: Match[]): Standings
 
   let rank = 1
   for (let i = 0; i < rows.length; i++) {
+    // If this is not the first row, check if it's different from the previous row
+    if (i > 0) {
+      const prev = rows[i - 1]
+      // If different stats, increment rank
+      if (prev.points !== rows[i].points || 
+          prev.goalDifference !== rows[i].goalDifference || 
+          prev.goalsFor !== rows[i].goalsFor) {
+        rank = i + 1
+      }
+    }
+    
     rows[i].rank = rank
+    
+    // Check if next player is tied with current player
     const next = rows[i + 1]
-    // Players are tied if they have same points, goal difference, and goals for
     if (next && 
         next.points === rows[i].points && 
         next.goalDifference === rows[i].goalDifference && 
         next.goalsFor === rows[i].goalsFor) {
       rows[i].isTied = true
       next.isTied = true
-    } else {
-      rank = i + 2
     }
   }
 

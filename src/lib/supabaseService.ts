@@ -281,11 +281,21 @@ export async function saveTournamentConfig(
 
 /**
  * Reset tournament (delete all matches, players, and reset config)
+ * @param location - Optional location data to record who reset the tournament (required in production, optional for local dev)
  */
-export async function resetTournament(): Promise<void> {
+export async function resetTournament(location?: { latitude: number; longitude: number; accuracy: number }): Promise<void> {
   try {
     const tournamentId = await getActiveTournamentId()
     if (!tournamentId) return
+
+    // Record reset history before deleting (always record, even without location)
+    await supabase.from('reset_history').insert({
+      tournament_id: tournamentId,
+      latitude: location?.latitude ?? null,
+      longitude: location?.longitude ?? null,
+      location_accuracy: location?.accuracy ?? null,
+      // reset_at will be automatically set by DEFAULT NOW() in the database
+    })
 
     // Delete all matches for this tournament
     await supabase.from('matches').delete().eq('tournament_id', tournamentId)
@@ -307,6 +317,29 @@ export async function resetTournament(): Promise<void> {
     localStorage.removeItem(ACTIVE_TOURNAMENT_ID_KEY)
   } catch (error) {
     console.error('Failed to reset tournament:', error)
+  }
+}
+
+/**
+ * Get reset history - shows all resets across all tournaments
+ * (Not filtered by active tournament since resets clear the active tournament)
+ */
+export async function getResetHistory() {
+  try {
+    const { data, error } = await supabase
+      .from('reset_history')
+      .select('*')
+      .order('reset_at', { ascending: false })
+
+    if (error) {
+      console.error('Failed to load reset history:', error)
+      return []
+    }
+
+    return data || []
+  } catch (error) {
+    console.error('Failed to load reset history:', error)
+    return []
   }
 }
 

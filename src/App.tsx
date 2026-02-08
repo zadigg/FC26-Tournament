@@ -6,14 +6,23 @@ import { StandingsTable } from './components/StandingsTable'
 import { GoldenGoalPlayoff } from './components/GoldenGoalPlayoff'
 import { KnockoutBracket } from './components/KnockoutBracket'
 import { Podium } from './components/Podium'
+import { ResetConfirmationDialog } from './components/ResetConfirmationDialog'
+import { ResetHistory } from './components/ResetHistory'
 
 function AppContent() {
   const { matches, isLoading, resetTournament } = useTournament()
   const [showKey, setShowKey] = useState(false)
   const [testMode, setTestMode] = useState(false)
+  const [showResetDialog, setShowResetDialog] = useState(false)
+  const [showResetHistory, setShowResetHistory] = useState(false)
   // Show tournament view only if matches exist (tournament has started)
   // If no matches exist, show setup page (even if players exist - they can be added before starting)
   const inTournament = matches.length > 0
+
+  const handleResetConfirm = async (location?: { latitude: number; longitude: number; accuracy: number }) => {
+    await resetTournament(location)
+    setShowResetDialog(false)
+  }
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100">
@@ -40,11 +49,18 @@ function AppContent() {
             >
               Test {testMode ? 'ON' : 'OFF'}
             </button>
+            <button
+              type="button"
+              onClick={() => setShowResetHistory(true)}
+              className="rounded bg-slate-600 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-500"
+            >
+              Reset History
+            </button>
             {inTournament && (
               <button
                 type="button"
-                onClick={resetTournament}
-                className="rounded bg-slate-600 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-500"
+                onClick={() => setShowResetDialog(true)}
+                className="rounded bg-red-600 px-3 py-1.5 text-sm text-slate-200 hover:bg-red-500"
               >
                 Reset tournament
               </button>
@@ -71,6 +87,15 @@ function AppContent() {
           <SetupView />
         )}
       </main>
+      <ResetConfirmationDialog
+        isOpen={showResetDialog}
+        onConfirm={handleResetConfirm}
+        onCancel={() => setShowResetDialog(false)}
+      />
+      <ResetHistory
+        isOpen={showResetHistory}
+        onClose={() => setShowResetHistory(false)}
+      />
     </div>
   )
 }

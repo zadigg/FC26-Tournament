@@ -46,7 +46,7 @@ type TournamentContextValue = {
   loadSamplePlayers: () => void
   startTournament: () => void
   setMatchScore: (matchId: string, scoreA: number, scoreB: number) => void
-  resetTournament: () => void
+  resetTournament: (location?: { latitude: number; longitude: number; accuracy: number }) => Promise<void>
   setKnockoutPlayerCount: (count: number) => void
   startKnockoutStage: () => void
   advanceToFinalStage: () => void
@@ -433,8 +433,8 @@ export function TournamentProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  const resetTournament = useCallback(async () => {
-    await resetTournamentInDB()
+  const resetTournament = useCallback(async (location?: { latitude: number; longitude: number; accuracy: number }) => {
+    await resetTournamentInDB(location)
     setState((s) => ({ 
       ...s, 
       players: [],
