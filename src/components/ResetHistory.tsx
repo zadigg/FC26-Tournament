@@ -40,10 +40,6 @@ export function ResetHistory({ isOpen, onClose }: ResetHistoryProps) {
     })
   }
 
-  const formatLocation = (lat: number | null, lng: number | null) => {
-    if (lat === null || lng === null) return 'Location not available'
-    return `${lat.toFixed(6)}, ${lng.toFixed(6)}`
-  }
 
   if (!isOpen) return null
 
@@ -81,27 +77,14 @@ export function ResetHistory({ isOpen, onClose }: ResetHistoryProps) {
                       <div className="mb-1 text-sm font-medium text-slate-300">
                         Reset at: {formatDate(record.reset_at)}
                       </div>
-                      {record.latitude !== null && record.longitude !== null ? (
+                      {record.city_name ? (
                         <div className="text-xs text-slate-400">
-                          <div>Location: {formatLocation(record.latitude, record.longitude)}</div>
-                          {record.location_accuracy && (
-                            <div>Accuracy: ±{Math.round(record.location_accuracy)}m</div>
-                          )}
+                          Location: {record.city_name}
                         </div>
                       ) : (
                         <div className="text-xs text-slate-500">Location not available</div>
                       )}
                     </div>
-                    {record.latitude !== null && record.longitude !== null && (
-                      <a
-                        href={`https://www.google.com/maps?q=${record.latitude},${record.longitude}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="rounded bg-blue-600 px-3 py-1.5 text-xs text-white hover:bg-blue-500"
-                      >
-                        View on Map
-                      </a>
-                    )}
                   </div>
                 </div>
               ))}

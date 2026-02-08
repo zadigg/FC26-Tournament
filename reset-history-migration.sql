@@ -9,9 +9,7 @@ DROP TABLE IF EXISTS reset_history CASCADE;
 CREATE TABLE reset_history (
   id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
   tournament_id TEXT NOT NULL,
-  latitude DECIMAL(10, 8),
-  longitude DECIMAL(11, 8),
-  location_accuracy DECIMAL(10, 2),
+  city_name TEXT, -- City name from reverse geocoding
   reset_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

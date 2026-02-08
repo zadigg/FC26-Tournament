@@ -48,8 +48,6 @@ export interface DatabaseMatch {
 export interface DatabaseResetHistory {
   id: string
   tournament_id: string
-  latitude: number | null
-  longitude: number | null
-  location_accuracy: number | null
+  city_name: string | null
   reset_at: string
 }

@@ -82,9 +82,7 @@ CREATE TRIGGER update_matches_updated_at BEFORE UPDATE ON matches
 CREATE TABLE IF NOT EXISTS reset_history (
   id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
   tournament_id TEXT NOT NULL, -- Store as TEXT to match our app's ID format
-  latitude DECIMAL(10, 8),
-  longitude DECIMAL(11, 8),
-  location_accuracy DECIMAL(10, 2),
+  city_name TEXT, -- City name from reverse geocoding
   reset_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

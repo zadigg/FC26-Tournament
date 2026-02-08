@@ -1,8 +1,9 @@
 import { useState } from 'react'
+import { reverseGeocode } from '../lib/geocoding'
 
 interface ResetConfirmationDialogProps {
   isOpen: boolean
-  onConfirm: (location?: { latitude: number; longitude: number; accuracy: number }) => void
+  onConfirm: (cityName?: string) => void
   onCancel: () => void
 }
 
@@ -37,8 +38,19 @@ export function ResetConfirmationDialog({ isOpen, onConfirm, onCancel }: ResetCo
         )
       })
 
-      const { latitude, longitude, accuracy } = position.coords
-      onConfirm({ latitude, longitude, accuracy: accuracy || 0 })
+      const { latitude, longitude } = position.coords
+      
+      // Reverse geocode to get city name
+      const cityName = await reverseGeocode(latitude, longitude)
+      
+      if (cityName) {
+        onConfirm(cityName)
+      } else {
+        // If geocoding fails, still allow reset but without city name
+        setLocationDenied(true)
+        setLocationError('Could not determine city name. You can still reset, but location will not be recorded.')
+        setIsRequestingLocation(false)
+      }
     } catch (error) {
       console.error('Failed to get location:', error)
       
@@ -121,7 +133,7 @@ export function ResetConfirmationDialog({ isOpen, onConfirm, onCancel }: ResetCo
                 disabled={isRequestingLocation}
                 className="flex-1 rounded bg-red-600 px-4 py-2 font-medium text-white hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isRequestingLocation ? 'Requesting location...' : 'Yes, Reset Tournament'}
+                {isRequestingLocation ? 'Getting location...' : 'Yes, Reset Tournament'}
               </button>
               <button
                 type="button"
