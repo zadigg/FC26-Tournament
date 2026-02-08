@@ -71,13 +71,26 @@ function TournamentView() {
     standings,
     matches,
     knockoutSeeds,
+    knockoutPlayerCount,
+    setKnockoutPlayerCount,
+    players,
   } = useTournament()
 
   const groupMatches = matches.filter((m) => !m.stage && !m.isGoldenGoal && m.roundIndex >= 0)
   const allGroupPlayed = groupMatches.length > 0 && groupMatches.every((m) => m.scoreA !== null && m.scoreB !== null)
   const goldenMatches = matches.filter((m) => m.isGoldenGoal)
   const allGoldenPlayed = goldenMatches.length === 0 || goldenMatches.every((m) => m.scoreA !== null && m.scoreB !== null)
-  const canStartKnockout = !knockoutSeeds && allGroupPlayed && allGoldenPlayed && !standings.some((s) => s.isTied) && standings.length >= 5
+  const groupComplete = allGroupPlayed && allGoldenPlayed && !standings.some((s) => s.isTied)
+  const canSetKnockoutCount = groupComplete && !knockoutSeeds && standings.length >= 2
+  const canStartKnockout = groupComplete && !knockoutSeeds && knockoutPlayerCount !== null && standings.length >= knockoutPlayerCount && knockoutPlayerCount >= 2
+  
+  // Get qualified players (top N based on knockoutPlayerCount)
+  const qualifiedPlayers = knockoutPlayerCount 
+    ? standings.slice(0, knockoutPlayerCount).map((s) => {
+        const player = players.find((p) => p.id === s.playerId)
+        return { ...s, player }
+      })
+    : []
 
   return (
     <section className="space-y-8">
@@ -86,7 +99,66 @@ function TournamentView() {
         <h2 className="mb-3 text-xl font-semibold text-slate-200">Group stage standings</h2>
         <StandingsTable />
       </div>
-      {canStartKnockout && (
+      
+      {/* Knockout Player Count Selection */}
+      {canSetKnockoutCount && !knockoutPlayerCount && (
+        <div className="rounded-lg border border-slate-600 bg-slate-800/50 p-4">
+          <h2 className="mb-3 text-xl font-semibold text-slate-200">Knockout Stage Setup</h2>
+          <p className="mb-4 text-sm text-slate-400">
+            Select how many players will advance to the knockout stage (minimum 2, maximum {standings.length})
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {Array.from({ length: Math.min(standings.length, 8) }, (_, i) => i + 2).map((count) => (
+              <button
+                key={count}
+                type="button"
+                onClick={() => setKnockoutPlayerCount(count)}
+                className="rounded bg-violet-600 px-4 py-2 font-medium text-white hover:bg-violet-500"
+              >
+                {count} Players
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Show Qualified Players */}
+      {knockoutPlayerCount && !knockoutSeeds && qualifiedPlayers.length > 0 && (
+        <div className="rounded-lg border border-emerald-600/50 bg-emerald-950/20 p-4">
+          <h2 className="mb-3 text-xl font-semibold text-emerald-400">
+            Qualified for Knockout ({knockoutPlayerCount} players)
+          </h2>
+          <div className="mb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {qualifiedPlayers.map((q, idx) => (
+              <div
+                key={q.playerId}
+                className="flex items-center justify-between rounded bg-slate-700/50 px-3 py-2"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-emerald-400">#{idx + 1}</span>
+                  <span className="font-medium text-slate-100">{q.playerName}</span>
+                </div>
+                <div className="text-sm text-slate-400">
+                  {q.points} pts · {q.goalsFor} GF
+                </div>
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={startKnockoutStage}
+            className="rounded bg-violet-600 px-4 py-2 font-medium text-white hover:bg-violet-500"
+          >
+            Start Knockout Stage (Random Draw)
+          </button>
+          <p className="mt-2 text-xs text-slate-400">
+            Players will be randomly shuffled for knockout bracket
+          </p>
+        </div>
+      )}
+
+      {/* Old button (kept for backward compatibility but should not show) */}
+      {canStartKnockout && !knockoutPlayerCount && (
         <div>
           <button
             type="button"
@@ -98,7 +170,9 @@ function TournamentView() {
           <p className="mt-1 text-sm text-slate-400">Semi-finals, final and 3rd place match. Rank 1–3 from knockout.</p>
         </div>
       )}
-      <KnockoutBracket />
+      
+      {/* Knockout Bracket - Show prominently when knockout stage has started */}
+      {knockoutSeeds && <KnockoutBracket />}
       <div className="flex flex-wrap items-center gap-2">
         <h2 className="text-xl font-semibold text-slate-200">Group rounds</h2>
         <button
