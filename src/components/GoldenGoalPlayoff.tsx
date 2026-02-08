@@ -18,16 +18,16 @@ export function GoldenGoalPlayoff() {
   if (goldenMatches.length === 0 && !standings.some((s) => s.isTied)) return null
 
   return (
-    <div className="bg-white rounded-card shadow-card p-6 space-y-4">
+    <div className="bg-white dark:bg-gray-800 rounded-card shadow-card dark:shadow-none dark:border dark:border-gray-700 p-6 space-y-4 transition-colors">
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Golden Goal Playoffs</h2>
-        <p className="text-sm text-gray-600">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Golden Goal Playoffs</h2>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           Tied on points and goals. First to score wins.
         </p>
       </div>
       {goldenMatches.length === 0 && standings.some((s) => s.isTied) && (
-        <div className="rounded-card bg-amber-50 border border-amber-200 p-4">
-          <p className="text-sm text-amber-700 font-medium">Golden goal matches will appear here once round-robin is complete.</p>
+        <div className="rounded-card bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4">
+          <p className="text-sm text-amber-700 dark:text-amber-300 font-medium">Golden goal matches will appear here once round-robin is complete.</p>
         </div>
       )}
       {goldenMatches.length > 0 && (

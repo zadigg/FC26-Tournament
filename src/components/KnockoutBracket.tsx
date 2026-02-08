@@ -33,10 +33,10 @@ function RoundSection({ title, matches, playerMap, stage, fillKnockoutRound, tes
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 dark:border-gray-700 pb-3">
         <div>
-          <h3 className="text-lg font-bold text-gray-900">{title}</h3>
-          <p className="text-xs text-gray-600 mt-1">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">{title}</h3>
+          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
             {matches.length} {matches.length === 1 ? 'match' : 'matches'} - Fill results to advance
           </p>
         </div>
@@ -118,22 +118,22 @@ export function KnockoutBracket({ testMode }: { testMode: boolean }) {
   const hasAnyMatches = knockoutMatches.length > 0
 
   return (
-    <div className="bg-white rounded-card shadow-card p-6 space-y-6 border-2 border-neobank-lime/20">
-      <div className="border-b border-gray-200 pb-4">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">🏆 Knockout Bracket</h2>
-        <p className="text-sm text-gray-600">{getDescription()}</p>
+    <div className="bg-white dark:bg-gray-800 rounded-card shadow-card dark:shadow-none dark:border-2 dark:border-neobank-lime/30 p-6 space-y-6 border-2 border-neobank-lime/20 transition-colors">
+      <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">🏆 Knockout Bracket</h2>
+        <p className="text-sm text-gray-600 dark:text-gray-400">{getDescription()}</p>
         
         {/* Show shuffled order */}
-        <div className="mt-4 rounded-card border border-neobank-lime/30 bg-neobank-lime/5 p-4">
-          <div className="text-xs font-bold text-gray-700 mb-3 uppercase tracking-wide">Shuffled Draw Order:</div>
+        <div className="mt-4 rounded-card border border-neobank-lime/30 dark:border-neobank-lime/50 bg-neobank-lime/5 dark:bg-neobank-lime/10 p-4">
+          <div className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wide">Shuffled Draw Order:</div>
           <div className="flex flex-wrap gap-2">
             {shuffledPlayers.map((name, idx) => (
               <div
                 key={idx}
-                className="flex items-center gap-2 rounded-full bg-white border border-gray-200 px-3 py-1.5 text-sm shadow-sm"
+                className="flex items-center gap-2 rounded-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 px-3 py-1.5 text-sm shadow-sm"
               >
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-neobank-lime text-white font-bold text-xs">#{idx + 1}</span>
-                <span className="font-semibold text-gray-900">{name}</span>
+                <span className="font-semibold text-gray-900 dark:text-gray-100">{name}</span>
               </div>
             ))}
           </div>
@@ -141,9 +141,9 @@ export function KnockoutBracket({ testMode }: { testMode: boolean }) {
       </div>
 
       {!hasAnyMatches && (
-        <div className="rounded-card border border-gray-200 bg-gray-50 p-6 text-center">
-          <p className="text-gray-700 text-lg mb-2 font-semibold">⏳ Generating bracket...</p>
-          <p className="text-gray-500 text-sm">
+        <div className="rounded-card border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 p-6 text-center">
+          <p className="text-gray-700 dark:text-gray-300 text-lg mb-2 font-semibold">⏳ Generating bracket...</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
             Knockout matches will appear here once the bracket is generated.
           </p>
         </div>
@@ -166,20 +166,20 @@ export function KnockoutBracket({ testMode }: { testMode: boolean }) {
            finalMatches.length === 0 && 
            semiMatches.length === 0 && 
            knockoutPlayerCount && knockoutPlayerCount >= 3 && (
-            <div className="rounded-card border-2 border-neobank-lime bg-neobank-lime/5 p-5">
+            <div className="rounded-card border-2 border-neobank-lime dark:border-neobank-lime/50 bg-neobank-lime/5 dark:bg-neobank-lime/10 p-5">
               <div className="flex flex-col items-center gap-4">
                 <div className="text-center">
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
                     Play-in Complete! 🎉
                   </h3>
-                  <p className="text-sm text-gray-600 mb-3 font-medium">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 font-medium">
                     {knockoutPlayerCount === 3
                       ? 'Play-in winner advances to Final vs 1st place'
                       : knockoutPlayerCount === 6 
                       ? 'Final play-in winner advances to Semi-finals'
                       : 'Play-in winner advances to Semi-finals'}
                   </p>
-                  <div className="text-xs text-gray-600 space-y-1.5">
+                  <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1.5">
                     {knockoutPlayerCount === 3 ? (
                       // For 3 players: show play-in result and who advances to final
                       (() => {
@@ -196,18 +196,18 @@ export function KnockoutBracket({ testMode }: { testMode: boolean }) {
                           <>
                             <div className="flex flex-wrap items-center justify-center gap-2">
                               <span className="text-neobank-lime font-semibold">Play-in:</span>
-                              <span className="text-gray-900 font-semibold">{winner.name}</span>
+                              <span className="text-gray-900 dark:text-gray-100 font-semibold">{winner.name}</span>
                               <span className="text-neobank-lime font-semibold">→ Final</span>
-                              <span className="text-gray-400">•</span>
-                              <span className="text-gray-600">{loser.name}</span>
-                              <span className="text-gray-400">(eliminated)</span>
+                              <span className="text-gray-400 dark:text-gray-500">•</span>
+                              <span className="text-gray-600 dark:text-gray-400">{loser.name}</span>
+                              <span className="text-gray-400 dark:text-gray-500">(eliminated)</span>
                             </div>
                             {firstPlayer && (
-                              <div className="flex flex-wrap items-center justify-center gap-2 mt-3 pt-3 border-t border-gray-200">
+                              <div className="flex flex-wrap items-center justify-center gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                                 <span className="text-neobank-lime font-bold">Final:</span>
-                                <span className="text-gray-900 font-bold text-sm">{firstPlayer.name}</span>
-                                <span className="text-gray-400">vs</span>
-                                <span className="text-gray-900 font-bold text-sm">{winner.name}</span>
+                                <span className="text-gray-900 dark:text-gray-100 font-bold text-sm">{firstPlayer.name}</span>
+                                <span className="text-gray-400 dark:text-gray-500">vs</span>
+                                <span className="text-gray-900 dark:text-gray-100 font-bold text-sm">{winner.name}</span>
                               </div>
                             )}
                           </>
@@ -234,20 +234,20 @@ export function KnockoutBracket({ testMode }: { testMode: boolean }) {
                               return (
                                 <div key={m.id} className="flex flex-wrap items-center justify-center gap-2">
                                   <span className="text-neobank-lime font-semibold">Play-in {idx + 1}:</span>
-                                  <span className="text-gray-900 font-semibold">{winner.name}</span>
-                                  <span className="text-gray-400">•</span>
-                                  <span className="text-gray-600">{loser.name}</span>
-                                  <span className="text-gray-400">(eliminated)</span>
+                                  <span className="text-gray-900 dark:text-gray-100 font-semibold">{winner.name}</span>
+                                  <span className="text-gray-400 dark:text-gray-500">•</span>
+                                  <span className="text-gray-600 dark:text-gray-400">{loser.name}</span>
+                                  <span className="text-gray-400 dark:text-gray-500">(eliminated)</span>
                                 </div>
                               )
                             })}
-                            <div className="flex flex-wrap items-center justify-center gap-2 mt-3 pt-3 border-t border-gray-200">
+                            <div className="flex flex-wrap items-center justify-center gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                               <span className="text-neobank-lime font-bold">Final Winner:</span>
-                              <span className="text-gray-900 font-bold text-sm">{finalWinner.name}</span>
+                              <span className="text-gray-900 dark:text-gray-100 font-bold text-sm">{finalWinner.name}</span>
                               <span className="text-neobank-lime font-semibold">→ Semi-finals</span>
-                              <span className="text-gray-400">•</span>
-                              <span className="text-gray-600">{finalLoser.name}</span>
-                              <span className="text-gray-400">(eliminated)</span>
+                              <span className="text-gray-400 dark:text-gray-500">•</span>
+                              <span className="text-gray-600 dark:text-gray-400">{finalLoser.name}</span>
+                              <span className="text-gray-400 dark:text-gray-500">(eliminated)</span>
                             </div>
                           </>
                         )
@@ -263,11 +263,11 @@ export function KnockoutBracket({ testMode }: { testMode: boolean }) {
                         return (
                           <div key={m.id} className="flex flex-wrap items-center justify-center gap-2">
                             <span className="text-neobank-lime font-semibold">Play-in {idx + 1}:</span>
-                            <span className="text-gray-900 font-semibold">{winner.name}</span>
+                            <span className="text-gray-900 dark:text-gray-100 font-semibold">{winner.name}</span>
                             <span className="text-neobank-lime font-semibold">→ Semi-finals</span>
-                            <span className="text-gray-400">•</span>
-                            <span className="text-gray-600">{loser.name}</span>
-                            <span className="text-gray-400">(eliminated)</span>
+                            <span className="text-gray-400 dark:text-gray-500">•</span>
+                            <span className="text-gray-600 dark:text-gray-400">{loser.name}</span>
+                            <span className="text-gray-400 dark:text-gray-500">(eliminated)</span>
                           </div>
                         )
                       })
@@ -277,7 +277,7 @@ export function KnockoutBracket({ testMode }: { testMode: boolean }) {
                 <button
                   type="button"
                   onClick={advanceToFinalStage}
-                  className="w-full rounded-button bg-black px-6 py-3.5 font-semibold text-white hover:bg-gray-800 shadow-sm transition-all"
+                  className="w-full rounded-button bg-black dark:bg-gray-700 px-6 py-3.5 font-semibold text-white hover:bg-gray-800 dark:hover:bg-gray-600 shadow-sm transition-all"
                 >
                   {knockoutPlayerCount === 3 
                     ? 'Advance to Final →'
@@ -304,16 +304,16 @@ export function KnockoutBracket({ testMode }: { testMode: boolean }) {
           {/* Advance to Final Stage Button */}
           {semiMatches.every((m) => m.scoreA !== null && m.scoreB !== null) && 
            finalMatches.length === 0 && (
-            <div className="rounded-card border-2 border-neobank-lime bg-neobank-lime/5 p-5">
+            <div className="rounded-card border-2 border-neobank-lime dark:border-neobank-lime/50 bg-neobank-lime/5 dark:bg-neobank-lime/10 p-5">
               <div className="flex flex-col items-center gap-4">
                 <div className="text-center">
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
                     Semi-finals Complete! 🎉
                   </h3>
-                  <p className="text-sm text-gray-600 mb-3 font-medium">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 font-medium">
                     Winners advance to Final • Losers play for 3rd Place
                   </p>
-                  <div className="text-xs text-gray-600 space-y-1.5">
+                  <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1.5">
                     {semiMatches.map((m, idx) => {
                       const pa = playerMap.get(m.playerAId)
                       const pb = playerMap.get(m.playerBId)
@@ -323,11 +323,11 @@ export function KnockoutBracket({ testMode }: { testMode: boolean }) {
                       return (
                         <div key={m.id} className="flex flex-wrap items-center justify-center gap-2">
                           <span className="text-neobank-lime font-semibold">Semi {idx + 1}:</span>
-                          <span className="text-gray-900 font-semibold">{winner.name}</span>
+                          <span className="text-gray-900 dark:text-gray-100 font-semibold">{winner.name}</span>
                           <span className="text-neobank-lime font-semibold">→ Final</span>
-                          <span className="text-gray-400">•</span>
-                          <span className="text-gray-600">{loser.name}</span>
-                          <span className="text-gray-500">→ 3rd Place</span>
+                          <span className="text-gray-400 dark:text-gray-500">•</span>
+                          <span className="text-gray-600 dark:text-gray-400">{loser.name}</span>
+                          <span className="text-gray-500 dark:text-gray-400">→ 3rd Place</span>
                         </div>
                       )
                     })}
@@ -336,7 +336,7 @@ export function KnockoutBracket({ testMode }: { testMode: boolean }) {
                 <button
                   type="button"
                   onClick={advanceToFinalStage}
-                  className="w-full rounded-button bg-black px-6 py-3.5 font-semibold text-white hover:bg-gray-800 shadow-sm transition-all"
+                  className="w-full rounded-button bg-black dark:bg-gray-700 px-6 py-3.5 font-semibold text-white hover:bg-gray-800 dark:hover:bg-gray-600 shadow-sm transition-all"
                 >
                   Advance to Final Stage →
                 </button>
@@ -349,16 +349,16 @@ export function KnockoutBracket({ testMode }: { testMode: boolean }) {
       {/* Final Round */}
       {finalMatches.length > 0 && (
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 pb-3">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 dark:border-gray-700 pb-3">
             <div>
-              <h3 className="text-lg font-bold text-gray-900">{STAGE_LABELS.final}</h3>
-              <p className="text-xs text-gray-600 mt-1 font-medium">Championship match</p>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">{STAGE_LABELS.final}</h3>
+              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 font-medium">Championship match</p>
             </div>
             {testMode && finalMatches.some((m) => m.scoreA === null || m.scoreB === null) && (
               <button
                 type="button"
                 onClick={() => fillKnockoutRound('final')}
-                className="rounded-button bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-600 transition-colors"
+                className="rounded-button bg-amber-500 dark:bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-600 dark:hover:bg-amber-700 transition-colors"
               >
                 Fill Final (test)
               </button>
@@ -378,16 +378,16 @@ export function KnockoutBracket({ testMode }: { testMode: boolean }) {
       {/* 3rd Place Match */}
       {thirdPlaceMatches.length > 0 && (
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 pb-3">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 dark:border-gray-700 pb-3">
             <div>
-              <h3 className="text-lg font-bold text-gray-900">{STAGE_LABELS.third_place}</h3>
-              <p className="text-xs text-gray-600 mt-1 font-medium">Semi-final losers compete for 3rd place</p>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">{STAGE_LABELS.third_place}</h3>
+              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 font-medium">Semi-final losers compete for 3rd place</p>
             </div>
             {testMode && thirdPlaceMatches.some((m) => m.scoreA === null || m.scoreB === null) && (
               <button
                 type="button"
                 onClick={() => fillKnockoutRound('third_place')}
-                className="rounded-button bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-600 transition-colors"
+                className="rounded-button bg-amber-500 dark:bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-600 dark:hover:bg-amber-700 transition-colors"
               >
                 Fill 3rd Place (test)
               </button>

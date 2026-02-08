@@ -38,20 +38,20 @@ export function RoundList() {
         return (
           <div key={r} className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h3 className="text-base font-bold text-gray-900">Round {r + 1}</h3>
+              <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">Round {r + 1}</h3>
               {roundElimination && eliminatedPlayer && (
-                <div className="flex items-center gap-2 rounded-full bg-red-50 border border-red-200 px-3 py-1.5 text-xs">
-                  <span className="text-red-600 font-semibold">❌ Eliminated:</span>
-                  <span className="font-semibold text-red-700">{eliminatedPlayer.name}</span>
-                  <span className="text-red-500">
+                <div className="flex items-center gap-2 rounded-full bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-3 py-1.5 text-xs">
+                  <span className="text-red-600 dark:text-red-400 font-semibold">❌ Eliminated:</span>
+                  <span className="font-semibold text-red-700 dark:text-red-300">{eliminatedPlayer.name}</span>
+                  <span className="text-red-500 dark:text-red-400">
                     ({roundElimination.reason === 'bye' ? 'had bye' : 'worst performance'})
                   </span>
                 </div>
               )}
               {!roundElimination && byePlayer && players.length % 2 === 1 && (
-                <div className="flex items-center gap-2 rounded-full bg-amber-50 border border-amber-200 px-3 py-1.5 text-xs">
-                  <span className="text-amber-600 font-semibold">⏸️ Bye:</span>
-                  <span className="font-semibold text-amber-700">{byePlayer.name}</span>
+                <div className="flex items-center gap-2 rounded-full bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-3 py-1.5 text-xs">
+                  <span className="text-amber-600 dark:text-amber-400 font-semibold">⏸️ Bye:</span>
+                  <span className="font-semibold text-amber-700 dark:text-amber-300">{byePlayer.name}</span>
                 </div>
               )}
             </div>

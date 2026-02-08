@@ -24,27 +24,27 @@ export function MatchCard({ match, playerA, playerB }: MatchCardProps) {
     <div
       className={`rounded-card border p-4 transition-all ${
         match.isGoldenGoal
-          ? 'border-amber-300 bg-amber-50'
+          ? 'border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-900/20'
           : isKnockout
-            ? 'border-neobank-lime/30 bg-neobank-lime/5'
-            : 'border-gray-200 bg-white'
-      } shadow-card hover:shadow-card-hover`}
+            ? 'border-neobank-lime/30 dark:border-neobank-lime/50 bg-neobank-lime/5 dark:bg-neobank-lime/10'
+            : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+      } shadow-card dark:shadow-none dark:border hover:shadow-card-hover`}
     >
       {match.isGoldenGoal && (
-        <div className="mb-3 px-2 py-1 rounded-full bg-amber-100 inline-block">
-          <span className="text-xs font-semibold uppercase tracking-wide text-amber-700">
+        <div className="mb-3 px-2 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 inline-block">
+          <span className="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">
             Golden goal playoff
           </span>
         </div>
       )}
       <div className="flex flex-wrap items-center gap-2 mb-3">
-        <span className="font-semibold text-gray-900">{playerA.name}</span>
-        <span className="text-gray-400 font-medium">vs</span>
-        <span className="font-semibold text-gray-900">{playerB.name}</span>
+        <span className="font-semibold text-gray-900 dark:text-gray-100">{playerA.name}</span>
+        <span className="text-gray-400 dark:text-gray-500 font-medium">vs</span>
+        <span className="font-semibold text-gray-900 dark:text-gray-100">{playerB.name}</span>
       </div>
       {played && !editing ? (
         <div className="flex items-center justify-between">
-          <span className="text-3xl font-bold text-gray-900">
+          <span className="text-3xl font-bold text-gray-900 dark:text-gray-100">
             {match.scoreA} – {match.scoreB}
           </span>
           <button

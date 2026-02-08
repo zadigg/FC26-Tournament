@@ -163,10 +163,10 @@ export function ScoreInput({
             }}
             onFocus={handleGoldenGoalFocusA}
             onBlur={handleGoldenGoalBlurA}
-            className="w-16 rounded-button border-2 border-gray-300 bg-white px-3 py-2 text-center text-lg font-bold text-gray-900 focus:border-amber-500 focus:outline-none transition-colors"
+            className="w-16 rounded-button border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-center text-lg font-bold text-gray-900 dark:text-gray-100 focus:border-amber-500 dark:focus:border-amber-500 focus:outline-none transition-colors"
             inputMode="numeric"
           />
-          <span className="text-gray-400 font-semibold text-xl">–</span>
+          <span className="text-gray-400 dark:text-gray-500 font-semibold text-xl">–</span>
           <input
             ref={inputBRef}
             type="number"
@@ -189,7 +189,7 @@ export function ScoreInput({
             }}
             onFocus={handleGoldenGoalFocusB}
             onBlur={handleGoldenGoalBlurB}
-            className="w-16 rounded-button border-2 border-gray-300 bg-white px-3 py-2 text-center text-lg font-bold text-gray-900 focus:border-amber-500 focus:outline-none transition-colors"
+            className="w-16 rounded-button border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-center text-lg font-bold text-gray-900 dark:text-gray-100 focus:border-amber-500 dark:focus:border-amber-500 focus:outline-none transition-colors"
             inputMode="numeric"
           />
         </div>
@@ -202,7 +202,7 @@ export function ScoreInput({
             Save
           </button>
           {onCancel && (
-            <button type="button" onClick={onCancel} className="rounded-button bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors">
+            <button type="button" onClick={onCancel} className="rounded-button bg-gray-100 dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
               Cancel
             </button>
           )}
@@ -229,10 +229,10 @@ export function ScoreInput({
           }}
           onFocus={handleFocusA}
           onBlur={handleBlurA}
-          className="w-16 rounded-button border-2 border-gray-300 bg-white px-3 py-2 text-center text-lg font-bold text-gray-900 focus:border-neobank-lime focus:outline-none transition-colors"
+          className="w-16 rounded-button border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-center text-lg font-bold text-gray-900 dark:text-gray-100 focus:border-neobank-lime focus:outline-none transition-colors"
           inputMode="numeric"
         />
-        <span className="text-gray-400 font-semibold text-xl">–</span>
+        <span className="text-gray-400 dark:text-gray-500 font-semibold text-xl">–</span>
         <input
           ref={inputBRef}
           type="number"
@@ -248,7 +248,7 @@ export function ScoreInput({
           }}
           onFocus={handleFocusB}
           onBlur={handleBlurB}
-          className="w-16 rounded-button border-2 border-gray-300 bg-white px-3 py-2 text-center text-lg font-bold text-gray-900 focus:border-neobank-lime focus:outline-none transition-colors"
+          className="w-16 rounded-button border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-center text-lg font-bold text-gray-900 dark:text-gray-100 focus:border-neobank-lime focus:outline-none transition-colors"
           inputMode="numeric"
         />
       </div>
@@ -257,7 +257,7 @@ export function ScoreInput({
           Save
         </button>
         {onCancel && (
-          <button type="button" onClick={onCancel} className="rounded-button bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors">
+          <button type="button" onClick={onCancel} className="rounded-button bg-gray-100 dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
             Cancel
           </button>
         )}
