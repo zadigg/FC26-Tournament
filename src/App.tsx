@@ -10,6 +10,7 @@ import { Podium } from './components/Podium'
 function AppContent() {
   const { matches, isLoading, resetTournament } = useTournament()
   const [showKey, setShowKey] = useState(false)
+  const [testMode, setTestMode] = useState(false)
   // Show tournament view only if matches exist (tournament has started)
   // If no matches exist, show setup page (even if players exist - they can be added before starting)
   const inTournament = matches.length > 0
@@ -27,6 +28,17 @@ function AppContent() {
               aria-expanded={showKey}
             >
               Key
+            </button>
+            <button
+              type="button"
+              onClick={() => setTestMode((v) => !v)}
+              className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${
+                testMode
+                  ? 'bg-amber-600 text-white hover:bg-amber-500'
+                  : 'bg-slate-600 text-slate-200 hover:bg-slate-500'
+              }`}
+            >
+              Test {testMode ? 'ON' : 'OFF'}
             </button>
             {inTournament && (
               <button
@@ -54,7 +66,7 @@ function AppContent() {
             </div>
           </div>
         ) : inTournament ? (
-          <TournamentView />
+          <TournamentView testMode={testMode} />
         ) : (
           <SetupView />
         )}
@@ -72,7 +84,7 @@ function SetupView() {
   )
 }
 
-function TournamentView() {
+function TournamentView({ testMode }: { testMode: boolean }) {
   const {
     fillFirstRoundWithSampleScores,
     fillAllRoundsTillSeven,
@@ -182,23 +194,27 @@ function TournamentView() {
       )}
       
       {/* Knockout Bracket - Show prominently when knockout stage has started */}
-      {knockoutSeeds && <KnockoutBracket />}
+      {knockoutSeeds && <KnockoutBracket testMode={testMode} />}
       <div className="flex flex-wrap items-center gap-2">
         <h2 className="text-xl font-semibold text-slate-200">Group rounds</h2>
-        <button
-          type="button"
-          onClick={fillFirstRoundWithSampleScores}
-          className="rounded bg-amber-600 px-3 py-1.5 text-sm text-white hover:bg-amber-500"
-        >
-          Fill first round (test)
-        </button>
-        <button
-          type="button"
-          onClick={fillAllRoundsTillSeven}
-          className="rounded bg-amber-600 px-3 py-1.5 text-sm text-white hover:bg-amber-500"
-        >
-          Fill rounds 1–7 (test)
-        </button>
+        {testMode && (
+          <>
+            <button
+              type="button"
+              onClick={fillFirstRoundWithSampleScores}
+              className="rounded bg-amber-600 px-3 py-1.5 text-sm text-white hover:bg-amber-500"
+            >
+              Fill first round (test)
+            </button>
+            <button
+              type="button"
+              onClick={fillAllRoundsTillSeven}
+              className="rounded bg-amber-600 px-3 py-1.5 text-sm text-white hover:bg-amber-500"
+            >
+              Fill rounds 1–7 (test)
+            </button>
+          </>
+        )}
       </div>
       <RoundList />
       <GoldenGoalPlayoff />

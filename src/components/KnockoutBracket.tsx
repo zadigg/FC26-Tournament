@@ -23,9 +23,10 @@ interface RoundSectionProps {
   playerMap: Map<string, { id: string; name: string }>
   stage: KnockoutStage
   fillKnockoutRound: (stage: KnockoutStage) => void
+  testMode: boolean
 }
 
-function RoundSection({ title, matches, playerMap, stage, fillKnockoutRound }: RoundSectionProps) {
+function RoundSection({ title, matches, playerMap, stage, fillKnockoutRound, testMode }: RoundSectionProps) {
   if (matches.length === 0) return null
 
   const hasUnplayed = matches.some((m) => m.scoreA === null || m.scoreB === null)
@@ -39,7 +40,7 @@ function RoundSection({ title, matches, playerMap, stage, fillKnockoutRound }: R
             {matches.length} {matches.length === 1 ? 'match' : 'matches'} - Fill results to advance
           </p>
         </div>
-        {hasUnplayed && (
+        {testMode && hasUnplayed && (
           <button
             type="button"
             onClick={() => fillKnockoutRound(stage)}
@@ -77,7 +78,7 @@ function RoundSection({ title, matches, playerMap, stage, fillKnockoutRound }: R
   )
 }
 
-export function KnockoutBracket() {
+export function KnockoutBracket({ testMode }: { testMode: boolean }) {
   const { matches, players, knockoutSeeds, knockoutPlayerCount, fillKnockoutRound, advanceToFinalStage } = useTournament()
   const playerMap = new Map(players.map((p) => [p.id, p]))
   const knockoutMatches = matches.filter((m) => m.stage).sort((a, b) => {
@@ -157,6 +158,7 @@ export function KnockoutBracket() {
             playerMap={playerMap}
             stage="play_in"
             fillKnockoutRound={fillKnockoutRound}
+            testMode={testMode}
           />
           
           {/* Advance Button (for 3 players: to Final, for 5+ players: to Semi-finals) */}
@@ -296,6 +298,7 @@ export function KnockoutBracket() {
             playerMap={playerMap}
             stage="semi"
             fillKnockoutRound={fillKnockoutRound}
+            testMode={testMode}
           />
           
           {/* Advance to Final Stage Button */}
@@ -351,7 +354,7 @@ export function KnockoutBracket() {
               <h3 className="text-lg font-semibold text-amber-400">{STAGE_LABELS.final}</h3>
               <p className="text-xs text-slate-400 mt-1">Championship match</p>
             </div>
-            {finalMatches.some((m) => m.scoreA === null || m.scoreB === null) && (
+            {testMode && finalMatches.some((m) => m.scoreA === null || m.scoreB === null) && (
               <button
                 type="button"
                 onClick={() => fillKnockoutRound('final')}
@@ -380,7 +383,7 @@ export function KnockoutBracket() {
               <h3 className="text-lg font-semibold text-slate-300">{STAGE_LABELS.third_place}</h3>
               <p className="text-xs text-slate-400 mt-1">Semi-final losers compete for 3rd place</p>
             </div>
-            {thirdPlaceMatches.some((m) => m.scoreA === null || m.scoreB === null) && (
+            {testMode && thirdPlaceMatches.some((m) => m.scoreA === null || m.scoreB === null) && (
               <button
                 type="button"
                 onClick={() => fillKnockoutRound('third_place')}
