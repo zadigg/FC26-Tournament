@@ -4,12 +4,38 @@ export function Podium() {
   const { standings, matches, knockoutResults, players } = useTournament()
   const playerMap = new Map(players.map((p) => [p.id, p]))
 
-  // Prefer knockout results (rank 1–3 from final + 3rd place)
+  // Prefer knockout results (rank 1–3 from final + 3rd place, or 1–2 for 2-player knockout)
   if (knockoutResults) {
     const first = playerMap.get(knockoutResults.firstId)
     const second = playerMap.get(knockoutResults.secondId)
+    if (!first || !second) return null
+    
+    // Handle 2-player knockout (no 3rd place)
+    if (knockoutResults.thirdId === null) {
+      return (
+        <div className="rounded-lg border border-slate-600 bg-slate-800/50 p-6">
+          <h2 className="mb-4 text-center text-xl font-semibold text-slate-200">Final standings</h2>
+          <div className="flex items-end justify-center gap-4">
+            <div className="flex flex-col items-center">
+              <div className="flex w-24 items-end justify-center rounded-t h-20 bg-amber-600">
+                <span className="mb-1 text-lg font-bold text-white">2nd</span>
+              </div>
+              <div className="mt-2 text-center font-medium text-slate-100">{second.name}</div>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="flex w-24 items-end justify-center rounded-t h-28 bg-slate-500">
+                <span className="mb-1 text-lg font-bold text-white">1st</span>
+              </div>
+              <div className="mt-2 text-center font-medium text-slate-100">{first.name}</div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+    
+    // Handle 3+ player knockout (with 3rd place)
     const third = playerMap.get(knockoutResults.thirdId)
-    if (!first || !second || !third) return null
+    if (!third) return null
     const order = [second, first, third]
     const labels = ['2nd', '1st', '3rd']
     const heights = ['h-20', 'h-28', 'h-16']

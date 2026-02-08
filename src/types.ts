@@ -23,7 +23,7 @@ export interface Match {
 export interface KnockoutResults {
   firstId: string
   secondId: string
-  thirdId: string
+  thirdId: string | null // null for 2-player knockout (no 3rd place match)
 }
 
 export interface StandingsRow {
@@ -39,4 +39,10 @@ export interface StandingsRow {
   goalDifference: number
   points: number
   isTied?: boolean
+}
+
+export interface RoundElimination {
+  roundIndex: number
+  eliminatedPlayerId: string
+  reason: 'lowest_points' | 'bye' | 'worst_performance'
 }

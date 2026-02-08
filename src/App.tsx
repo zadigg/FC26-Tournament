@@ -80,7 +80,8 @@ function TournamentView() {
   const allGroupPlayed = groupMatches.length > 0 && groupMatches.every((m) => m.scoreA !== null && m.scoreB !== null)
   const goldenMatches = matches.filter((m) => m.isGoldenGoal)
   const allGoldenPlayed = goldenMatches.length === 0 || goldenMatches.every((m) => m.scoreA !== null && m.scoreB !== null)
-  const groupComplete = allGroupPlayed && allGoldenPlayed && !standings.some((s) => s.isTied)
+  // Allow knockout even with ties - users can resolve ties later or proceed
+  const groupComplete = allGroupPlayed && allGoldenPlayed
   const canSetKnockoutCount = groupComplete && !knockoutSeeds && standings.length >= 2
   const canStartKnockout = groupComplete && !knockoutSeeds && knockoutPlayerCount !== null && standings.length >= knockoutPlayerCount && knockoutPlayerCount >= 2
   
@@ -108,7 +109,7 @@ function TournamentView() {
             Select how many players will advance to the knockout stage (minimum 2, maximum {standings.length})
           </p>
           <div className="flex flex-wrap gap-2">
-            {Array.from({ length: Math.min(standings.length, 8) }, (_, i) => i + 2).map((count) => (
+            {Array.from({ length: standings.length - 1 }, (_, i) => i + 2).map((count) => (
               <button
                 key={count}
                 type="button"

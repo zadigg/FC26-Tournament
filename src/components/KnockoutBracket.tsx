@@ -102,7 +102,9 @@ export function KnockoutBracket() {
     if (knockoutPlayerCount === 3) return 'Play-in → Final (top 3 players)'
     if (knockoutPlayerCount === 4) return 'Semi-finals (2 random games) → Winners play Final, Losers play for 3rd place'
     if (knockoutPlayerCount === 5) return 'Top 3 safe → Play-in (4th vs 5th) → Semi-finals → Final & 3rd place'
-    return `Knockout stage (top ${knockoutPlayerCount} players) - Top 3 safe, bottom players play play-in`
+    if (knockoutPlayerCount === 6) return 'Top 3 safe → Play-in Round 1 (5th vs 6th) → Play-in Round 2 (winner vs 4th) → Semi-finals → Final & 3rd place'
+    if (knockoutPlayerCount === 7) return 'Top 3 safe → Multiple play-in rounds (4th-7th) → Semi-finals → Final & 3rd place'
+    return `Knockout stage (top ${knockoutPlayerCount} players) - Top 3 safe, bottom players play multiple play-in rounds until 1 winner remains`
   }
 
   // Show shuffled seeds info
@@ -157,10 +159,11 @@ export function KnockoutBracket() {
             fillKnockoutRound={fillKnockoutRound}
           />
           
-          {/* Advance to Semi-finals Button (for 5+ players) */}
+          {/* Advance Button (for 3 players: to Final, for 5+ players: to Semi-finals) */}
           {playInMatches.every((m) => m.scoreA !== null && m.scoreB !== null) && 
+           finalMatches.length === 0 && 
            semiMatches.length === 0 && 
-           knockoutPlayerCount && knockoutPlayerCount >= 5 && (
+           knockoutPlayerCount && knockoutPlayerCount >= 3 && (
             <div className="rounded-lg border-2 border-emerald-500 bg-emerald-950/30 p-4">
               <div className="flex flex-col items-center gap-3">
                 <div className="text-center">
@@ -168,26 +171,105 @@ export function KnockoutBracket() {
                     Play-in Complete! 🎉
                   </h3>
                   <p className="text-sm text-slate-300 mb-2">
-                    Play-in winner advances to Semi-finals
+                    {knockoutPlayerCount === 3
+                      ? 'Play-in winner advances to Final vs 1st place'
+                      : knockoutPlayerCount === 6 
+                      ? 'Final play-in winner advances to Semi-finals'
+                      : 'Play-in winner advances to Semi-finals'}
                   </p>
                   <div className="text-xs text-slate-400 space-y-1">
-                    {playInMatches.map((m, idx) => {
-                      const pa = playerMap.get(m.playerAId)
-                      const pb = playerMap.get(m.playerBId)
-                      if (!pa || !pb || m.scoreA === null || m.scoreB === null) return null
-                      const winner = m.scoreA > m.scoreB ? pa : pb
-                      const loser = m.scoreA > m.scoreB ? pb : pa
-                      return (
-                        <div key={m.id} className="flex items-center justify-center gap-2">
-                          <span className="text-emerald-400">Play-in {idx + 1}:</span>
-                          <span className="text-slate-200 font-medium">{winner.name}</span>
-                          <span className="text-emerald-400">→ Semi-finals</span>
-                          <span className="text-slate-400">•</span>
-                          <span className="text-slate-300">{loser.name}</span>
-                          <span className="text-slate-500">(eliminated)</span>
-                        </div>
-                      )
-                    })}
+                    {knockoutPlayerCount === 3 ? (
+                      // For 3 players: show play-in result and who advances to final
+                      (() => {
+                        const m = playInMatches[0]
+                        if (!m) return null
+                        const pa = playerMap.get(m.playerAId)
+                        const pb = playerMap.get(m.playerBId)
+                        if (!pa || !pb || m.scoreA === null || m.scoreB === null) return null
+                        const winner = m.scoreA > m.scoreB ? pa : pb
+                        const loser = m.scoreA > m.scoreB ? pb : pa
+                        const [firstSeed] = knockoutSeeds || []
+                        const firstPlayer = firstSeed ? playerMap.get(firstSeed) : null
+                        return (
+                          <>
+                            <div className="flex items-center justify-center gap-2">
+                              <span className="text-emerald-400">Play-in:</span>
+                              <span className="text-slate-200 font-medium">{winner.name}</span>
+                              <span className="text-emerald-400">→ Final</span>
+                              <span className="text-slate-400">•</span>
+                              <span className="text-slate-300">{loser.name}</span>
+                              <span className="text-slate-500">(eliminated)</span>
+                            </div>
+                            {firstPlayer && (
+                              <div className="flex items-center justify-center gap-2 mt-2 pt-2 border-t border-emerald-600/30">
+                                <span className="text-emerald-400 font-semibold">Final:</span>
+                                <span className="text-slate-100 font-bold text-sm">{firstPlayer.name}</span>
+                                <span className="text-slate-400">vs</span>
+                                <span className="text-slate-100 font-bold text-sm">{winner.name}</span>
+                              </div>
+                            )}
+                          </>
+                        )
+                      })()
+                    ) : knockoutPlayerCount === 6 ? (
+                      // For 6 players, show final winner separately
+                      (() => {
+                        const sortedMatches = [...playInMatches].sort((a, b) => a.id.localeCompare(b.id))
+                        const finalMatch = sortedMatches[sortedMatches.length - 1]
+                        const pa = playerMap.get(finalMatch.playerAId)
+                        const pb = playerMap.get(finalMatch.playerBId)
+                        if (!pa || !pb || finalMatch.scoreA === null || finalMatch.scoreB === null) return null
+                        const finalWinner = finalMatch.scoreA > finalMatch.scoreB ? pa : pb
+                        const finalLoser = finalMatch.scoreA > finalMatch.scoreB ? pb : pa
+                        return (
+                          <>
+                            {sortedMatches.slice(0, -1).map((m, idx) => {
+                              const p1 = playerMap.get(m.playerAId)
+                              const p2 = playerMap.get(m.playerBId)
+                              if (!p1 || !p2 || m.scoreA === null || m.scoreB === null) return null
+                              const winner = m.scoreA > m.scoreB ? p1 : p2
+                              const loser = m.scoreA > m.scoreB ? p2 : p1
+                              return (
+                                <div key={m.id} className="flex items-center justify-center gap-2">
+                                  <span className="text-emerald-400">Play-in {idx + 1}:</span>
+                                  <span className="text-slate-200 font-medium">{winner.name}</span>
+                                  <span className="text-slate-400">•</span>
+                                  <span className="text-slate-300">{loser.name}</span>
+                                  <span className="text-slate-500">(eliminated)</span>
+                                </div>
+                              )
+                            })}
+                            <div className="flex items-center justify-center gap-2 mt-2 pt-2 border-t border-emerald-600/30">
+                              <span className="text-emerald-400 font-semibold">Final Winner:</span>
+                              <span className="text-slate-100 font-bold text-sm">{finalWinner.name}</span>
+                              <span className="text-emerald-400">→ Semi-finals</span>
+                              <span className="text-slate-400">•</span>
+                              <span className="text-slate-300">{finalLoser.name}</span>
+                              <span className="text-slate-500">(eliminated)</span>
+                            </div>
+                          </>
+                        )
+                      })()
+                    ) : (
+                      // For 5 players, show single winner
+                      playInMatches.map((m, idx) => {
+                        const pa = playerMap.get(m.playerAId)
+                        const pb = playerMap.get(m.playerBId)
+                        if (!pa || !pb || m.scoreA === null || m.scoreB === null) return null
+                        const winner = m.scoreA > m.scoreB ? pa : pb
+                        const loser = m.scoreA > m.scoreB ? pb : pa
+                        return (
+                          <div key={m.id} className="flex items-center justify-center gap-2">
+                            <span className="text-emerald-400">Play-in {idx + 1}:</span>
+                            <span className="text-slate-200 font-medium">{winner.name}</span>
+                            <span className="text-emerald-400">→ Semi-finals</span>
+                            <span className="text-slate-400">•</span>
+                            <span className="text-slate-300">{loser.name}</span>
+                            <span className="text-slate-500">(eliminated)</span>
+                          </div>
+                        )
+                      })
+                    )}
                   </div>
                 </div>
                 <button
@@ -195,7 +277,9 @@ export function KnockoutBracket() {
                   onClick={advanceToFinalStage}
                   className="rounded bg-emerald-600 px-6 py-3 font-semibold text-white hover:bg-emerald-500 shadow-lg transition-all hover:scale-105"
                 >
-                  Advance to Semi-finals →
+                  {knockoutPlayerCount === 3 
+                    ? 'Advance to Final →'
+                    : 'Advance to Semi-finals →'}
                 </button>
               </div>
             </div>

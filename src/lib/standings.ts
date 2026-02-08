@@ -65,7 +65,11 @@ export function computeStandings(players: Player[], matches: Match[]): Standings
   })
 
   rows.sort((a, b) => {
+    // Primary: Points (descending)
     if (b.points !== a.points) return b.points - a.points
+    // Secondary: Goal Difference (descending)
+    if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference
+    // Tertiary: Goals For (descending)
     return b.goalsFor - a.goalsFor
   })
 
@@ -73,7 +77,11 @@ export function computeStandings(players: Player[], matches: Match[]): Standings
   for (let i = 0; i < rows.length; i++) {
     rows[i].rank = rank
     const next = rows[i + 1]
-    if (next && next.points === rows[i].points && next.goalsFor === rows[i].goalsFor) {
+    // Players are tied if they have same points, goal difference, and goals for
+    if (next && 
+        next.points === rows[i].points && 
+        next.goalDifference === rows[i].goalDifference && 
+        next.goalsFor === rows[i].goalsFor) {
       rows[i].isTied = true
       next.isTied = true
     } else {
