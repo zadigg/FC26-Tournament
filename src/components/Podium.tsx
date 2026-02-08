@@ -13,20 +13,20 @@ export function Podium() {
     // Handle 2-player knockout (no 3rd place)
     if (knockoutResults.thirdId === null) {
       return (
-        <div className="rounded-lg border border-slate-600 bg-slate-800/50 p-6">
-          <h2 className="mb-4 text-center text-xl font-semibold text-slate-200">Final standings</h2>
+        <div className="bg-white rounded-card shadow-card p-6">
+          <h2 className="mb-6 text-center text-xl font-bold text-gray-900">Final Standings</h2>
           <div className="flex items-end justify-center gap-4">
             <div className="flex flex-col items-center">
-              <div className="flex w-24 items-end justify-center rounded-t h-20 bg-amber-600">
-                <span className="mb-1 text-lg font-bold text-white">2nd</span>
+              <div className="flex w-24 items-end justify-center rounded-t h-20 bg-gray-300 shadow-sm">
+                <span className="mb-2 text-lg font-bold text-white">2nd</span>
               </div>
-              <div className="mt-2 text-center font-medium text-slate-100">{second.name}</div>
+              <div className="mt-3 text-center font-semibold text-gray-900">{second.name}</div>
             </div>
             <div className="flex flex-col items-center">
-              <div className="flex w-24 items-end justify-center rounded-t h-28 bg-slate-500">
-                <span className="mb-1 text-lg font-bold text-white">1st</span>
+              <div className="flex w-28 items-end justify-center rounded-t h-32 bg-neobank-lime shadow-sm">
+                <span className="mb-2 text-xl font-bold text-white">1st</span>
               </div>
-              <div className="mt-2 text-center font-medium text-slate-100">{first.name}</div>
+              <div className="mt-3 text-center font-semibold text-gray-900">{first.name}</div>
             </div>
           </div>
         </div>
@@ -38,22 +38,22 @@ export function Podium() {
     if (!third) return null
     const order = [second, first, third]
     const labels = ['2nd', '1st', '3rd']
-    const heights = ['h-20', 'h-28', 'h-16']
+    const heights = ['h-20', 'h-32', 'h-16']
+    const widths = ['w-24', 'w-28', 'w-24']
+    const colors = ['bg-gray-300', 'bg-neobank-lime', 'bg-gray-400']
 
     return (
-      <div className="rounded-lg border border-slate-600 bg-slate-800/50 p-6">
-        <h2 className="mb-4 text-center text-xl font-semibold text-slate-200">Final standings</h2>
+      <div className="bg-white rounded-card shadow-card p-6">
+        <h2 className="mb-6 text-center text-xl font-bold text-gray-900">Final Standings</h2>
         <div className="flex items-end justify-center gap-4">
           {order.map((p, i) => (
             <div key={p.id} className="flex flex-col items-center">
               <div
-                className={`flex w-24 items-end justify-center rounded-t ${heights[i]} ${
-                  i === 0 ? 'bg-amber-600' : i === 1 ? 'bg-slate-500' : 'bg-amber-800'
-                }`}
+                className={`flex ${widths[i]} items-end justify-center rounded-t ${heights[i]} ${colors[i]} shadow-sm`}
               >
-                <span className="mb-1 text-lg font-bold text-white">{labels[i]}</span>
+                <span className={`mb-2 ${i === 1 ? 'text-xl' : 'text-lg'} font-bold text-white`}>{labels[i]}</span>
               </div>
-              <div className="mt-2 text-center font-medium text-slate-100">{p.name}</div>
+              <div className="mt-3 text-center font-semibold text-gray-900">{p.name}</div>
             </div>
           ))}
         </div>
@@ -73,11 +73,13 @@ export function Podium() {
 
   const order = [2, 0, 1]
   const labels = ['2nd', '1st', '3rd']
-  const heights = ['h-20', 'h-28', 'h-16']
+  const heights = ['h-20', 'h-32', 'h-16']
+  const widths = ['w-24', 'w-28', 'w-24']
+  const colors = ['bg-gray-300', 'bg-neobank-lime', 'bg-gray-400']
 
   return (
-    <div className="rounded-lg border border-slate-600 bg-slate-800/50 p-6">
-      <h2 className="mb-4 text-center text-xl font-semibold text-slate-200">Group stage top 3</h2>
+    <div className="bg-white rounded-card shadow-card p-6">
+      <h2 className="mb-6 text-center text-xl font-bold text-gray-900">Group Stage Top 3</h2>
       <div className="flex items-end justify-center gap-4">
         {order.map((idx, i) => {
           const row = top3[idx]
@@ -85,14 +87,12 @@ export function Podium() {
           return (
             <div key={row.playerId} className="flex flex-col items-center">
               <div
-                className={`flex w-24 items-end justify-center rounded-t ${heights[i]} ${
-                  i === 0 ? 'bg-amber-600' : i === 1 ? 'bg-slate-500' : 'bg-amber-800'
-                }`}
+                className={`flex ${widths[i]} items-end justify-center rounded-t ${heights[i]} ${colors[i]} shadow-sm`}
               >
-                <span className="mb-1 text-lg font-bold text-white">{labels[i]}</span>
+                <span className={`mb-2 ${i === 1 ? 'text-xl' : 'text-lg'} font-bold text-white`}>{labels[i]}</span>
               </div>
-              <div className="mt-2 text-center font-medium text-slate-100">{row.playerName}</div>
-              <div className="text-sm text-slate-400">{row.points} pts · {row.goalsFor} GF</div>
+              <div className="mt-3 text-center font-semibold text-gray-900">{row.playerName}</div>
+              <div className="text-sm text-gray-600 font-medium mt-1">{row.points} pts · {row.goalsFor} GF</div>
             </div>
           )
         })}

@@ -36,22 +36,22 @@ export function RoundList() {
           : null
 
         return (
-          <div key={r}>
-            <div className="mb-2 flex items-center justify-between">
-              <h3 className="text-sm font-medium text-slate-400">Round {r + 1}</h3>
+          <div key={r} className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="text-base font-bold text-gray-900">Round {r + 1}</h3>
               {roundElimination && eliminatedPlayer && (
-                <div className="flex items-center gap-2 rounded-full bg-red-950/30 px-3 py-1 text-xs">
-                  <span className="text-red-400">❌ Eliminated:</span>
-                  <span className="font-medium text-red-300">{eliminatedPlayer.name}</span>
-                  <span className="text-slate-500">
+                <div className="flex items-center gap-2 rounded-full bg-red-50 border border-red-200 px-3 py-1.5 text-xs">
+                  <span className="text-red-600 font-semibold">❌ Eliminated:</span>
+                  <span className="font-semibold text-red-700">{eliminatedPlayer.name}</span>
+                  <span className="text-red-500">
                     ({roundElimination.reason === 'bye' ? 'had bye' : 'worst performance'})
                   </span>
                 </div>
               )}
               {!roundElimination && byePlayer && players.length % 2 === 1 && (
-                <div className="flex items-center gap-2 rounded-full bg-amber-950/30 px-3 py-1 text-xs">
-                  <span className="text-amber-400">⏸️ Bye:</span>
-                  <span className="font-medium text-amber-300">{byePlayer.name}</span>
+                <div className="flex items-center gap-2 rounded-full bg-amber-50 border border-amber-200 px-3 py-1.5 text-xs">
+                  <span className="text-amber-600 font-semibold">⏸️ Bye:</span>
+                  <span className="font-semibold text-amber-700">{byePlayer.name}</span>
                 </div>
               )}
             </div>

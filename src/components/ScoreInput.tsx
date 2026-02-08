@@ -138,10 +138,9 @@ export function ScoreInput({
 
   if (isGoldenGoal) {
     return (
-      <form onSubmit={handleSubmit} className="mt-2 flex flex-wrap items-center gap-2">
-        <span className="text-xs text-amber-400">First goal wins</span>
-        <label className="flex items-center gap-1">
-          <span className="text-sm text-slate-400">A</span>
+      <form onSubmit={handleSubmit} className="mt-3 flex flex-wrap items-center gap-3">
+        <span className="text-xs font-semibold text-amber-600 px-2 py-1 rounded-full bg-amber-50">First goal wins</span>
+        <div className="flex items-center gap-2">
           <input
             ref={inputARef}
             type="number"
@@ -164,13 +163,10 @@ export function ScoreInput({
             }}
             onFocus={handleGoldenGoalFocusA}
             onBlur={handleGoldenGoalBlurA}
-            className="w-14 rounded border border-slate-600 bg-slate-800 px-2 py-1 text-center text-slate-100"
+            className="w-16 rounded-button border-2 border-gray-300 bg-white px-3 py-2 text-center text-lg font-bold text-gray-900 focus:border-amber-500 focus:outline-none transition-colors"
             inputMode="numeric"
           />
-        </label>
-        <span className="text-slate-500">–</span>
-        <label className="flex items-center gap-1">
-          <span className="text-sm text-slate-400">B</span>
+          <span className="text-gray-400 font-semibold text-xl">–</span>
           <input
             ref={inputBRef}
             type="number"
@@ -193,29 +189,31 @@ export function ScoreInput({
             }}
             onFocus={handleGoldenGoalFocusB}
             onBlur={handleGoldenGoalBlurB}
-            className="w-14 rounded border border-slate-600 bg-slate-800 px-2 py-1 text-center text-slate-100"
+            className="w-16 rounded-button border-2 border-gray-300 bg-white px-3 py-2 text-center text-lg font-bold text-gray-900 focus:border-amber-500 focus:outline-none transition-colors"
             inputMode="numeric"
           />
-        </label>
-        <button
-          type="submit"
-          disabled={scoreA + scoreB !== 1}
-          className="rounded bg-emerald-600 px-3 py-1 text-sm text-white hover:bg-emerald-500 disabled:opacity-50"
-        >
-          Save
-        </button>
-        {onCancel && (
-          <button type="button" onClick={onCancel} className="text-sm text-slate-400 hover:text-slate-300">
-            Cancel
+        </div>
+        <div className="flex gap-2">
+          <button
+            type="submit"
+            disabled={scoreA + scoreB !== 1}
+            className="rounded-button bg-neobank-lime px-4 py-2 text-sm font-semibold text-white hover:bg-neobank-lime-dark disabled:opacity-50 transition-colors shadow-sm"
+          >
+            Save
           </button>
-        )}
+          {onCancel && (
+            <button type="button" onClick={onCancel} className="rounded-button bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors">
+              Cancel
+            </button>
+          )}
+        </div>
       </form>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-2 flex flex-wrap items-center gap-2">
-      <label className="flex items-center gap-1">
+    <form onSubmit={handleSubmit} className="mt-3 flex flex-wrap items-center gap-3">
+      <div className="flex items-center gap-2">
         <input
           ref={inputARef}
           type="number"
@@ -231,12 +229,10 @@ export function ScoreInput({
           }}
           onFocus={handleFocusA}
           onBlur={handleBlurA}
-          className="w-14 rounded border border-slate-600 bg-slate-800 px-2 py-1 text-center text-slate-100"
+          className="w-16 rounded-button border-2 border-gray-300 bg-white px-3 py-2 text-center text-lg font-bold text-gray-900 focus:border-neobank-lime focus:outline-none transition-colors"
           inputMode="numeric"
         />
-      </label>
-      <span className="text-slate-500">–</span>
-      <label className="flex items-center gap-1">
+        <span className="text-gray-400 font-semibold text-xl">–</span>
         <input
           ref={inputBRef}
           type="number"
@@ -252,18 +248,20 @@ export function ScoreInput({
           }}
           onFocus={handleFocusB}
           onBlur={handleBlurB}
-          className="w-14 rounded border border-slate-600 bg-slate-800 px-2 py-1 text-center text-slate-100"
+          className="w-16 rounded-button border-2 border-gray-300 bg-white px-3 py-2 text-center text-lg font-bold text-gray-900 focus:border-neobank-lime focus:outline-none transition-colors"
           inputMode="numeric"
         />
-      </label>
-      <button type="submit" className="rounded bg-emerald-600 px-3 py-1 text-sm text-white hover:bg-emerald-500">
-        Save
-      </button>
-      {onCancel && (
-        <button type="button" onClick={onCancel} className="text-sm text-slate-400 hover:text-slate-300">
-          Cancel
+      </div>
+      <div className="flex gap-2">
+        <button type="submit" className="rounded-button bg-neobank-lime px-4 py-2 text-sm font-semibold text-white hover:bg-neobank-lime-dark transition-colors shadow-sm">
+          Save
         </button>
-      )}
+        {onCancel && (
+          <button type="button" onClick={onCancel} className="rounded-button bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors">
+            Cancel
+          </button>
+        )}
+      </div>
     </form>
   )
 }

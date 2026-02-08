@@ -22,35 +22,37 @@ export function MatchCard({ match, playerA, playerB }: MatchCardProps) {
   const isKnockout = !!match.stage
   return (
     <div
-      className={`rounded-lg border p-4 ${
+      className={`rounded-card border p-4 transition-all ${
         match.isGoldenGoal
-          ? 'border-amber-500/50 bg-amber-950/20'
+          ? 'border-amber-300 bg-amber-50'
           : isKnockout
-            ? 'border-violet-500/50 bg-violet-950/20'
-            : 'border-slate-600 bg-slate-800/50'
-      }`}
+            ? 'border-neobank-lime/30 bg-neobank-lime/5'
+            : 'border-gray-200 bg-white'
+      } shadow-card hover:shadow-card-hover`}
     >
       {match.isGoldenGoal && (
-        <div className="mb-2 text-xs font-medium uppercase tracking-wide text-amber-400">
-          Golden goal playoff
+        <div className="mb-3 px-2 py-1 rounded-full bg-amber-100 inline-block">
+          <span className="text-xs font-semibold uppercase tracking-wide text-amber-700">
+            Golden goal playoff
+          </span>
         </div>
       )}
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="font-medium text-slate-100">{playerA.name}</span>
-        <span className="text-slate-500">vs</span>
-        <span className="font-medium text-slate-100">{playerB.name}</span>
+      <div className="flex flex-wrap items-center gap-2 mb-3">
+        <span className="font-semibold text-gray-900">{playerA.name}</span>
+        <span className="text-gray-400 font-medium">vs</span>
+        <span className="font-semibold text-gray-900">{playerB.name}</span>
       </div>
       {played && !editing ? (
-        <div className="mt-2 flex items-center gap-2">
-          <span className="text-2xl font-bold text-slate-100">
+        <div className="flex items-center justify-between">
+          <span className="text-3xl font-bold text-gray-900">
             {match.scoreA} – {match.scoreB}
           </span>
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="text-sm text-slate-400 hover:text-emerald-400"
+            className="text-sm font-medium text-neobank-lime hover:text-neobank-lime-dark transition-colors"
           >
-            Edit score
+            Edit
           </button>
         </div>
       ) : (

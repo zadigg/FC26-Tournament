@@ -80,32 +80,34 @@ export function ResetConfirmationDialog({ isOpen, onConfirm, onCancel }: ResetCo
 
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-lg border border-red-600/50 bg-slate-800 p-6 shadow-xl">
-        <h2 className="mb-4 text-xl font-bold text-red-400">⚠️ Reset Tournament</h2>
-        <p className="mb-4 text-slate-300">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div className="w-full max-w-md rounded-card bg-white p-6 shadow-xl border border-gray-200">
+        <h2 className="mb-4 text-xl font-bold text-gray-900">⚠️ Reset Tournament</h2>
+        <p className="mb-4 text-gray-700 font-medium">
           Are you sure you want to reset the tournament? This will:
         </p>
-        <ul className="mb-4 ml-6 list-disc space-y-1 text-sm text-slate-400">
+        <ul className="mb-4 ml-6 list-disc space-y-2 text-sm text-gray-600">
           <li>Delete all players</li>
           <li>Delete all matches</li>
           <li>Clear all tournament data</li>
           <li>This action cannot be undone</li>
         </ul>
-        <p className="mb-4 text-sm text-red-400">
-          ⚠️ Location sharing is REQUIRED to reset the tournament. This helps track who performed the reset. Reset cannot proceed without location access.
-        </p>
+        <div className="mb-4 rounded-card bg-red-50 border border-red-200 p-4">
+          <p className="text-sm text-red-700 font-semibold">
+            ⚠️ Location sharing is REQUIRED to reset the tournament. This helps track who performed the reset. Reset cannot proceed without location access.
+          </p>
+        </div>
         {locationError && (
-          <div className="mb-4 rounded border border-red-600/50 bg-red-900/50 p-3 text-sm text-red-300">
-            {locationError}
+          <div className="mb-4 rounded-card border border-red-300 bg-red-50 p-4">
+            <p className="text-sm text-red-700 font-medium">{locationError}</p>
           </div>
         )}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-3">
           {locationDenied ? (
             <button
               type="button"
               onClick={onCancel}
-              className="w-full rounded bg-slate-600 px-4 py-2 font-medium text-slate-200 hover:bg-slate-500"
+              className="w-full rounded-button bg-gray-100 px-4 py-2.5 font-semibold text-gray-700 hover:bg-gray-200 transition-colors"
             >
               Close
             </button>
@@ -115,15 +117,15 @@ export function ResetConfirmationDialog({ isOpen, onConfirm, onCancel }: ResetCo
                 type="button"
                 onClick={handleConfirm}
                 disabled={isRequestingLocation}
-                className="flex-1 rounded bg-red-600 px-4 py-2 font-medium text-white hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 rounded-button bg-red-500 px-4 py-2.5 font-semibold text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
               >
-                {isRequestingLocation ? 'Getting location...' : 'Yes, Reset Tournament'}
+                {isRequestingLocation ? 'Getting location...' : 'Yes, Reset'}
               </button>
               <button
                 type="button"
                 onClick={onCancel}
                 disabled={isRequestingLocation}
-                className="flex-1 rounded bg-slate-600 px-4 py-2 font-medium text-slate-200 hover:bg-slate-500 disabled:opacity-50"
+                className="flex-1 rounded-button bg-gray-100 px-4 py-2.5 font-semibold text-gray-700 hover:bg-gray-200 disabled:opacity-50 transition-colors"
               >
                 Cancel
               </button>

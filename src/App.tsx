@@ -25,60 +25,71 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100">
-      <header className="border-b border-slate-700 bg-slate-800 px-4 py-3">
-        <div className="mx-auto max-w-4xl">
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-xl font-bold">Round Robin Tournament</h1>
-            <button
-              type="button"
-              onClick={() => setShowKey((v) => !v)}
-              className="rounded bg-slate-600 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-500"
-              aria-expanded={showKey}
-            >
-              Key
-            </button>
-            <button
-              type="button"
-              onClick={() => setTestMode((v) => !v)}
-              className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${
-                testMode
-                  ? 'bg-amber-600 text-white hover:bg-amber-500'
-                  : 'bg-slate-600 text-slate-200 hover:bg-slate-500'
-              }`}
-            >
-              Test {testMode ? 'ON' : 'OFF'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowResetHistory(true)}
-              className="rounded bg-slate-600 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-500"
-            >
-              Reset History
-            </button>
-            {inTournament && (
+    <div className="min-h-screen bg-gray-50 text-gray-900">
+      <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
+        <div className="mx-auto max-w-4xl px-4 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl font-bold text-gray-900">Tournament</h1>
+              {inTournament && (
+                <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-neobank-lime/10 text-neobank-lime">
+                  Active
+                </span>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                onClick={() => setShowResetDialog(true)}
-                className="rounded bg-red-600 px-3 py-1.5 text-sm text-slate-200 hover:bg-red-500"
+                onClick={() => setShowKey((v) => !v)}
+                className="rounded-button bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+                aria-expanded={showKey}
               >
-                Reset tournament
+                Key
               </button>
-            )}
+              <button
+                type="button"
+                onClick={() => setTestMode((v) => !v)}
+                className={`rounded-button px-3 py-1.5 text-sm font-medium transition-colors ${
+                  testMode
+                    ? 'bg-neobank-lime text-white hover:bg-neobank-lime-dark'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Test {testMode ? 'ON' : 'OFF'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowResetHistory(true)}
+                className="rounded-button bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+              >
+                History
+              </button>
+              {inTournament && (
+                <button
+                  type="button"
+                  onClick={() => setShowResetDialog(true)}
+                  className="rounded-button bg-red-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-600 transition-colors"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
           </div>
           {showKey && (
-            <p className="mt-2 text-xs text-slate-400">
-              <span className="text-slate-300">#</span> Rank · <span className="text-slate-300">P</span> Played · <span className="text-slate-300">W</span> Wins · <span className="text-slate-300">D</span> Draws · <span className="text-slate-300">L</span> Losses · <span className="text-slate-300">GF</span> Goals For · <span className="text-slate-300">GA</span> Goals Against · <span className="text-slate-300">GD</span> Goal Difference · <span className="text-slate-300">Pts</span> Points
-            </p>
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <p className="text-xs text-gray-500 leading-relaxed">
+                <span className="font-medium text-gray-700">#</span> Rank · <span className="font-medium text-gray-700">P</span> Played · <span className="font-medium text-gray-700">W</span> Wins · <span className="font-medium text-gray-700">D</span> Draws · <span className="font-medium text-gray-700">L</span> Losses · <span className="font-medium text-gray-700">GF</span> Goals For · <span className="font-medium text-gray-700">GA</span> Goals Against · <span className="font-medium text-gray-700">GD</span> Goal Difference · <span className="font-medium text-gray-700">Pts</span> Points
+              </p>
+            </div>
           )}
         </div>
       </header>
-      <main className="mx-auto max-w-4xl p-4">
+      <main className="mx-auto max-w-4xl px-4 py-6 pb-20">
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
+          <div className="flex items-center justify-center py-16">
             <div className="text-center">
-              <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-slate-600 border-t-violet-600"></div>
-              <p className="text-slate-400">Loading tournament...</p>
+              <div className="mb-4 inline-block h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-neobank-lime"></div>
+              <p className="text-gray-500 font-medium">Loading tournament...</p>
             </div>
           </div>
         ) : inTournament ? (
@@ -103,7 +114,10 @@ function AppContent() {
 function SetupView() {
   return (
     <section className="space-y-6">
-      <p className="text-slate-300">Add players, shuffle if you like, then start the tournament.</p>
+      <div className="bg-white rounded-card shadow-card p-6">
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Welcome to Tournament</h2>
+        <p className="text-gray-600">Add players, shuffle if you like, then start the tournament.</p>
+      </div>
       <PlayerSetup />
     </section>
   )
@@ -140,10 +154,11 @@ function TournamentView({ testMode }: { testMode: boolean }) {
     : []
 
   return (
-    <section className="space-y-8">
+    <section className="space-y-6">
       <Podium />
-      <div>
-        <h2 className="mb-3 text-xl font-semibold text-slate-200">Group stage standings</h2>
+      
+      <div className="bg-white rounded-card shadow-card p-6">
+        <h2 className="mb-4 text-xl font-bold text-gray-900">Group stage standings</h2>
         <StandingsTable />
       </div>
       
@@ -152,9 +167,9 @@ function TournamentView({ testMode }: { testMode: boolean }) {
       
       {/* Knockout Player Count Selection */}
       {canSetKnockoutCount && !knockoutPlayerCount && (
-        <div className="rounded-lg border border-slate-600 bg-slate-800/50 p-4">
-          <h2 className="mb-3 text-xl font-semibold text-slate-200">Knockout Stage Setup</h2>
-          <p className="mb-4 text-sm text-slate-400">
+        <div className="bg-white rounded-card shadow-card p-6">
+          <h2 className="mb-2 text-xl font-bold text-gray-900">Knockout Stage Setup</h2>
+          <p className="mb-4 text-sm text-gray-600">
             Select how many players will advance to the knockout stage (minimum 2, maximum {standings.length})
           </p>
           <div className="flex flex-wrap gap-2">
@@ -163,7 +178,7 @@ function TournamentView({ testMode }: { testMode: boolean }) {
                 key={count}
                 type="button"
                 onClick={() => setKnockoutPlayerCount(count)}
-                className="rounded bg-violet-600 px-4 py-2 font-medium text-white hover:bg-violet-500"
+                className="rounded-button bg-neobank-lime px-4 py-2.5 font-semibold text-white hover:bg-neobank-lime-dark transition-colors shadow-sm"
               >
                 {count} Players
               </button>
@@ -174,22 +189,22 @@ function TournamentView({ testMode }: { testMode: boolean }) {
 
       {/* Show Qualified Players */}
       {knockoutPlayerCount && !knockoutSeeds && qualifiedPlayers.length > 0 && (
-        <div className="rounded-lg border border-emerald-600/50 bg-emerald-950/20 p-4">
-          <h2 className="mb-3 text-xl font-semibold text-emerald-400">
+        <div className="bg-white rounded-card shadow-card p-6 border-2 border-neobank-lime/20">
+          <h2 className="mb-4 text-xl font-bold text-gray-900">
             Qualified for Knockout ({knockoutPlayerCount} players)
           </h2>
-          <div className="mb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {qualifiedPlayers.map((q, idx) => (
               <div
                 key={q.playerId}
-                className="flex items-center justify-between rounded bg-slate-700/50 px-3 py-2"
+                className="flex items-center justify-between rounded-card bg-gray-50 px-4 py-3 border border-gray-200"
               >
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-emerald-400">#{idx + 1}</span>
-                  <span className="font-medium text-slate-100">{q.playerName}</span>
+                <div className="flex items-center gap-3">
+                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-neobank-lime text-white font-bold text-sm">#{idx + 1}</span>
+                  <span className="font-semibold text-gray-900">{q.playerName}</span>
                 </div>
-                <div className="text-sm text-slate-400">
-                  {q.points} pts · {q.goalsFor} GF
+                <div className="text-sm text-gray-600 font-medium">
+                  {q.points} pts
                 </div>
               </div>
             ))}
@@ -197,11 +212,11 @@ function TournamentView({ testMode }: { testMode: boolean }) {
           <button
             type="button"
             onClick={startKnockoutStage}
-            className="rounded bg-violet-600 px-4 py-2 font-medium text-white hover:bg-violet-500"
+            className="w-full rounded-button bg-black px-6 py-3.5 font-semibold text-white hover:bg-gray-800 transition-colors shadow-sm"
           >
             Start Knockout Stage (Random Draw)
           </button>
-          <p className="mt-2 text-xs text-slate-400">
+          <p className="mt-3 text-xs text-gray-500 text-center">
             Players will be randomly shuffled for knockout bracket
           </p>
         </div>
@@ -209,42 +224,45 @@ function TournamentView({ testMode }: { testMode: boolean }) {
 
       {/* Old button (kept for backward compatibility but should not show) */}
       {canStartKnockout && !knockoutPlayerCount && (
-        <div>
+        <div className="bg-white rounded-card shadow-card p-6">
           <button
             type="button"
             onClick={startKnockoutStage}
-            className="rounded bg-violet-600 px-4 py-2 font-medium text-white hover:bg-violet-500"
+            className="w-full rounded-button bg-black px-6 py-3.5 font-semibold text-white hover:bg-gray-800 transition-colors"
           >
             Start knockout stage (top 5, random draw)
           </button>
-          <p className="mt-1 text-sm text-slate-400">Semi-finals, final and 3rd place match. Rank 1–3 from knockout.</p>
+          <p className="mt-3 text-sm text-gray-600 text-center">Semi-finals, final and 3rd place match. Rank 1–3 from knockout.</p>
         </div>
       )}
       
       {/* Knockout Bracket - Show prominently when knockout stage has started */}
       {knockoutSeeds && <KnockoutBracket testMode={testMode} />}
-      <div className="flex flex-wrap items-center gap-2">
-        <h2 className="text-xl font-semibold text-slate-200">Group rounds</h2>
-        {testMode && (
-          <>
-            <button
-              type="button"
-              onClick={fillFirstRoundWithSampleScores}
-              className="rounded bg-amber-600 px-3 py-1.5 text-sm text-white hover:bg-amber-500"
-            >
-              Fill first round (test)
-            </button>
-            <button
-              type="button"
-              onClick={fillAllRoundsTillSeven}
-              className="rounded bg-amber-600 px-3 py-1.5 text-sm text-white hover:bg-amber-500"
-            >
-              Fill rounds 1–7 (test)
-            </button>
-          </>
-        )}
+      
+      <div className="bg-white rounded-card shadow-card p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <h2 className="text-xl font-bold text-gray-900">Group rounds</h2>
+          {testMode && (
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={fillFirstRoundWithSampleScores}
+                className="rounded-button bg-amber-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-600 transition-colors"
+              >
+                Fill first round (test)
+              </button>
+              <button
+                type="button"
+                onClick={fillAllRoundsTillSeven}
+                className="rounded-button bg-amber-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-600 transition-colors"
+              >
+                Fill rounds 1–7 (test)
+              </button>
+            </div>
+          )}
+        </div>
+        <RoundList />
       </div>
-      <RoundList />
     </section>
   )
 }
