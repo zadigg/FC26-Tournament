@@ -19,7 +19,7 @@ function AppContent() {
   // If no matches exist, show setup page (even if players exist - they can be added before starting)
   const inTournament = matches.length > 0
 
-  const handleResetConfirm = async (cityName?: string) => {
+  const handleResetConfirm = async (cityName: string) => {
     await resetTournament(cityName)
     setShowResetDialog(false)
   }

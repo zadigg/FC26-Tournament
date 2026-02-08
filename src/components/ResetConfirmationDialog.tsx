@@ -3,7 +3,7 @@ import { reverseGeocode } from '../lib/geocoding'
 
 interface ResetConfirmationDialogProps {
   isOpen: boolean
-  onConfirm: (cityName?: string) => void
+  onConfirm: (cityName: string) => void
   onCancel: () => void
 }
 
@@ -46,9 +46,9 @@ export function ResetConfirmationDialog({ isOpen, onConfirm, onCancel }: ResetCo
       if (cityName) {
         onConfirm(cityName)
       } else {
-        // If geocoding fails, still allow reset but without city name
+        // If geocoding fails, don't allow reset
         setLocationDenied(true)
-        setLocationError('Could not determine city name. You can still reset, but location will not be recorded.')
+        setLocationError('Could not determine city name. Reset cannot proceed without location information.')
         setIsRequestingLocation(false)
       }
     } catch (error) {
@@ -58,29 +58,26 @@ export function ResetConfirmationDialog({ isOpen, onConfirm, onCancel }: ResetCo
       if (error instanceof GeolocationPositionError) {
         if (error.code === GeolocationPositionError.PERMISSION_DENIED) {
           setLocationDenied(true)
-          setLocationError('Location permission denied. You can still reset, but location will not be recorded.')
+          setLocationError('Location permission denied. Reset cannot proceed without location access. Please allow location access in your browser settings.')
         } else if (error.code === GeolocationPositionError.POSITION_UNAVAILABLE) {
           setLocationDenied(true)
-          setLocationError('Location unavailable (common on localhost). You can still reset, but location will not be recorded.')
+          setLocationError('Location unavailable. Reset cannot proceed without location access. Please ensure location services are enabled.')
         } else if (error.code === GeolocationPositionError.TIMEOUT) {
           setLocationDenied(true)
-          setLocationError('Location request timed out. You can still reset, but location will not be recorded.')
+          setLocationError('Location request timed out. Reset cannot proceed without location access. Please try again.')
         } else {
           setLocationDenied(true)
-          setLocationError('Could not get location. You can still reset, but location will not be recorded.')
+          setLocationError('Could not get location. Reset cannot proceed without location access.')
         }
       } else {
         const errorMessage = error instanceof Error ? error.message : 'Failed to get location'
         setLocationDenied(true)
-        setLocationError(`${errorMessage}. You can still reset, but location will not be recorded.`)
+        setLocationError(`${errorMessage}. Reset cannot proceed without location access.`)
       }
       setIsRequestingLocation(false)
     }
   }
 
-  const handleResetWithoutLocation = () => {
-    onConfirm(undefined) // Reset without location
-  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -95,36 +92,23 @@ export function ResetConfirmationDialog({ isOpen, onConfirm, onCancel }: ResetCo
           <li>Clear all tournament data</li>
           <li>This action cannot be undone</li>
         </ul>
-        <p className="mb-4 text-sm text-amber-400">
-          ⚠️ Location sharing is requested to track who performed the reset. If unavailable (e.g., on localhost), you can still proceed without location.
+        <p className="mb-4 text-sm text-red-400">
+          ⚠️ Location sharing is REQUIRED to reset the tournament. This helps track who performed the reset. Reset cannot proceed without location access.
         </p>
         {locationError && (
-          <div className={`mb-4 rounded border p-3 text-sm ${
-            locationDenied 
-              ? 'bg-amber-900/50 border-amber-600/50 text-amber-300' 
-              : 'bg-red-900/50 border-red-600/50 text-red-300'
-          }`}>
+          <div className="mb-4 rounded border border-red-600/50 bg-red-900/50 p-3 text-sm text-red-300">
             {locationError}
           </div>
         )}
         <div className="flex flex-wrap gap-2">
           {locationDenied ? (
-            <>
-              <button
-                type="button"
-                onClick={handleResetWithoutLocation}
-                className="flex-1 rounded bg-red-600 px-4 py-2 font-medium text-white hover:bg-red-500"
-              >
-                Reset Without Location
-              </button>
-              <button
-                type="button"
-                onClick={onCancel}
-                className="flex-1 rounded bg-slate-600 px-4 py-2 font-medium text-slate-200 hover:bg-slate-500"
-              >
-                Cancel
-              </button>
-            </>
+            <button
+              type="button"
+              onClick={onCancel}
+              className="w-full rounded bg-slate-600 px-4 py-2 font-medium text-slate-200 hover:bg-slate-500"
+            >
+              Close
+            </button>
           ) : (
             <>
               <button

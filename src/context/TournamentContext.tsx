@@ -46,7 +46,7 @@ type TournamentContextValue = {
   loadSamplePlayers: () => void
   startTournament: () => void
   setMatchScore: (matchId: string, scoreA: number, scoreB: number) => void
-  resetTournament: (cityName?: string) => Promise<void>
+  resetTournament: (cityName: string) => Promise<void>
   setKnockoutPlayerCount: (count: number) => void
   startKnockoutStage: () => void
   advanceToFinalStage: () => void
@@ -433,7 +433,7 @@ export function TournamentProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  const resetTournament = useCallback(async (cityName?: string) => {
+  const resetTournament = useCallback(async (cityName: string) => {
     await resetTournamentInDB(cityName)
     setState((s) => ({ 
       ...s, 
