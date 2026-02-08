@@ -122,6 +122,9 @@ function TournamentView({ testMode }: { testMode: boolean }) {
         <StandingsTable />
       </div>
       
+      {/* Golden Goal Playoffs - Show right after standings, before group rounds */}
+      <GoldenGoalPlayoff />
+      
       {/* Knockout Player Count Selection */}
       {canSetKnockoutCount && !knockoutPlayerCount && (
         <div className="rounded-lg border border-slate-600 bg-slate-800/50 p-4">
@@ -217,7 +220,6 @@ function TournamentView({ testMode }: { testMode: boolean }) {
         )}
       </div>
       <RoundList />
-      <GoldenGoalPlayoff />
     </section>
   )
 }
