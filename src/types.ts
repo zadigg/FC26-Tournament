@@ -18,12 +18,6 @@ export interface Match {
   isGoldenGoal?: boolean
   /** Set for knockout phase only; group stage matches have no stage */
   stage?: KnockoutStage
-  /** From DB for historical matches; used for grouping by date */
-  created_at?: string
-  /** When the match was played (score entered); used for exact time display */
-  updated_at?: string
-  /** Optional comment after match (e.g. complaints, banter) */
-  comment?: string
 }
 
 export interface KnockoutResults {

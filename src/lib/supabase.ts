@@ -41,7 +41,6 @@ export interface DatabaseMatch {
   status: 'pending' | 'played' | 'golden_goal'
   is_golden_goal: boolean
   stage: 'play_in' | 'semi' | 'final' | 'third_place' | null
-  comment?: string | null
   created_at?: string
   updated_at?: string
 }

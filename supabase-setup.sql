@@ -34,7 +34,6 @@ CREATE TABLE IF NOT EXISTS matches (
   status TEXT NOT NULL CHECK (status IN ('pending', 'played', 'golden_goal')),
   is_golden_goal BOOLEAN DEFAULT FALSE,
   stage TEXT CHECK (stage IN ('play_in', 'semi', 'final', 'third_place')),
-  comment TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

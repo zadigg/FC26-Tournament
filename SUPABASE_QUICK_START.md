@@ -66,9 +66,6 @@
 - Make sure you ran `supabase-setup.sql` in SQL Editor
 - Check that all 3 tables exist in Table Editor
 
-### Adding match comments (optional)
-- If you already ran the base schema, run `supabase-migration-comment.sql` in SQL Editor to add the comment column
-
 ### Data not saving
 - Check browser console for errors
 - Verify Supabase project is active (not paused)

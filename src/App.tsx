@@ -7,24 +7,16 @@ import { GoldenGoalPlayoff } from './components/GoldenGoalPlayoff'
 import { KnockoutBracket } from './components/KnockoutBracket'
 import { Podium } from './components/Podium'
 import { ResetConfirmationDialog } from './components/ResetConfirmationDialog'
-import { NewMatchDialog } from './components/NewMatchDialog'
 import { ResetHistory } from './components/ResetHistory'
-import { HeadToHead } from './components/HeadToHead'
-import { MatchHistory } from './components/MatchHistory'
-import { Records } from './components/Records'
 import { useDarkMode } from './hooks/useDarkMode'
 
 function AppContent() {
-  const { matches, isLoading, resetTournament, rematch, knockoutResults } = useTournament()
+  const { matches, isLoading, resetTournament } = useTournament()
   const { isDark, toggle: toggleDarkMode } = useDarkMode()
   const [showKey, setShowKey] = useState(false)
   const [testMode, setTestMode] = useState(false)
   const [showResetDialog, setShowResetDialog] = useState(false)
-  const [showNewMatchDialog, setShowNewMatchDialog] = useState(false)
   const [showResetHistory, setShowResetHistory] = useState(false)
-  const [showHeadToHead, setShowHeadToHead] = useState(false)
-  const [showMatchHistory, setShowMatchHistory] = useState(false)
-  const [showRecords, setShowRecords] = useState(false)
   // Show tournament view only if matches exist (tournament has started)
   // If no matches exist, show setup page (even if players exist - they can be added before starting)
   const inTournament = matches.length > 0
@@ -33,18 +25,6 @@ function AppContent() {
     await resetTournament(cityName)
     setShowResetDialog(false)
   }
-
-  const handleRematch = async () => {
-    await rematch()
-  }
-
-  const handleSelectNewPlayers = () => {
-    setShowNewMatchDialog(false)
-    setShowResetDialog(true)
-  }
-
-  // Tournament is complete when knockout results exist (final has been played)
-  const tournamentComplete = !!knockoutResults
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
@@ -94,52 +74,13 @@ function AppContent() {
               >
                 History
               </button>
-              <button
-                type="button"
-                onClick={() => setShowHeadToHead(true)}
-                className="rounded-button bg-gray-100 dark:bg-gray-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-              >
-                Head-to-Head
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowMatchHistory(true)}
-                className="rounded-button bg-gray-100 dark:bg-gray-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-              >
-                Match History
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowRecords(true)}
-                className="rounded-button bg-gray-100 dark:bg-gray-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-              >
-                Records
-              </button>
-              {inTournament && tournamentComplete && (
-                <>
-                  <button
-                    type="button"
-                    onClick={handleRematch}
-                    className="rounded-button bg-neobank-lime px-3 py-1.5 text-sm font-medium text-white hover:bg-neobank-lime-dark transition-colors"
-                  >
-                    Rematch
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowNewMatchDialog(true)}
-                    className="rounded-button bg-gray-100 dark:bg-gray-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                  >
-                    Start new match
-                  </button>
-                </>
-              )}
-              {inTournament && !tournamentComplete && (
+              {inTournament && (
                 <button
                   type="button"
-                  onClick={() => setShowNewMatchDialog(true)}
-                  className="rounded-button bg-gray-100 dark:bg-gray-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  onClick={() => setShowResetDialog(true)}
+                  className="rounded-button bg-red-500 dark:bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-600 dark:hover:bg-red-700 transition-colors"
                 >
-                  Start new match
+                  Reset
                 </button>
               )}
             </div>
@@ -167,33 +108,14 @@ function AppContent() {
           <SetupView />
         )}
       </main>
-      <NewMatchDialog
-        isOpen={showNewMatchDialog}
-        onReplaySamePlayers={handleRematch}
-        onSelectNewPlayers={handleSelectNewPlayers}
-        onCancel={() => setShowNewMatchDialog(false)}
-      />
       <ResetConfirmationDialog
         isOpen={showResetDialog}
         onConfirm={handleResetConfirm}
         onCancel={() => setShowResetDialog(false)}
-        testMode={testMode}
       />
       <ResetHistory
         isOpen={showResetHistory}
         onClose={() => setShowResetHistory(false)}
-      />
-      <HeadToHead
-        isOpen={showHeadToHead}
-        onClose={() => setShowHeadToHead(false)}
-      />
-      <MatchHistory
-        isOpen={showMatchHistory}
-        onClose={() => setShowMatchHistory(false)}
-      />
-      <Records
-        isOpen={showRecords}
-        onClose={() => setShowRecords(false)}
       />
     </div>
   )
