@@ -214,6 +214,28 @@ export async function findPlayerByName(name: string): Promise<Player | null> {
 }
 
 /**
+ * Get all players from the players table only.
+ * Does not add or infer any players - use for "Load all players" to avoid inserting placeholders.
+ */
+export async function getPlayersFromDatabase(): Promise<Player[]> {
+  try {
+    const { data, error } = await supabase
+      .from('players')
+      .select('id, name')
+      .order('created_at')
+
+    if (error) {
+      console.error('Error loading players from database:', error)
+      return []
+    }
+    return (data || []).map((p) => ({ id: p.id, name: p.name }))
+  } catch (error) {
+    console.error('Failed to load players from database:', error)
+    return []
+  }
+}
+
+/**
  * Get unique player IDs and names from historical matches
  * Fetches all players that have ever played matches
  */

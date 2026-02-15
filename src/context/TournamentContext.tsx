@@ -16,7 +16,7 @@ import {
   loadTournamentState,
   loadAllHistoricalMatches,
   getHistoricalPlayers,
-  seedSamplePlayersIfEmpty,
+  getPlayersFromDatabase,
   addPlayerToDatabase,
   findSimilarPlayers,
   type AddPlayerResult,
@@ -120,8 +120,7 @@ export function TournamentProvider({ children }: { children: ReactNode }) {
           loadAllHistoricalMatches(),
           getHistoricalPlayers(),
         ])
-        await seedSamplePlayersIfEmpty()
-        const finalPlayers = histPlayers.length === 0 ? await getHistoricalPlayers() : histPlayers
+        const finalPlayers = histPlayers
         if (mounted) {
           setState({
             ...loadedState,
@@ -226,7 +225,7 @@ export function TournamentProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const loadSamplePlayers = useCallback(async () => {
-    const allPlayers = await getHistoricalPlayers()
+    const allPlayers = await getPlayersFromDatabase()
     setState((s) => ({ ...s, players: allPlayers, matches: [] }))
   }, [])
 
