@@ -17,6 +17,8 @@ export function HeadToHead({ isOpen, onClose }: HeadToHeadProps) {
   const [selectedPlayerA, setSelectedPlayerA] = useState<string>('')
   const [selectedPlayerB, setSelectedPlayerB] = useState<string>('')
   const [stats, setStats] = useState<HeadToHeadStats | null>(null)
+  const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set())
+  const [hasInitialExpand, setHasInitialExpand] = useState(false)
 
   // Load historical data when dialog opens
   useEffect(() => {
@@ -25,7 +27,6 @@ export function HeadToHead({ isOpen, onClose }: HeadToHeadProps) {
       setStats(null) // Reset stats when reopening
       Promise.all([loadAllHistoricalMatches(), getHistoricalPlayers()])
         .then(([matches, players]) => {
-          console.log('Loaded historical data:', { matchesCount: matches.length, playersCount: players.length })
           setHistoricalMatches(matches)
           setHistoricalPlayers(players)
           setIsLoading(false)
@@ -37,9 +38,7 @@ export function HeadToHead({ isOpen, onClose }: HeadToHeadProps) {
     }
   }, [isOpen])
 
-  if (!isOpen) return null
-
-  // Combine current and historical data
+  // Combine current and historical data (always, for consistent hook order)
   // Use Set to deduplicate matches by ID
   const allMatchesMap = new Map<string, Match>()
   const allPlayersMap = new Map<string, Player>()
@@ -55,18 +54,6 @@ export function HeadToHead({ isOpen, onClose }: HeadToHeadProps) {
   const allMatches = Array.from(allMatchesMap.values())
   const allPlayers = Array.from(allPlayersMap.values())
 
-  // Debug logging
-  if (isOpen && !isLoading) {
-    console.log('HeadToHead data:', {
-      currentPlayers: currentPlayers.length,
-      historicalPlayers: historicalPlayers.length,
-      allPlayers: allPlayers.length,
-      currentMatches: currentMatches.length,
-      historicalMatches: historicalMatches.length,
-      allMatches: allMatches.length,
-    })
-  }
-
   const playedMatches = allMatches.filter((m) => m.scoreA !== null && m.scoreB !== null)
   const playerPairs = getAllPlayerPairs(playedMatches, allPlayers)
 
@@ -74,11 +61,51 @@ export function HeadToHead({ isOpen, onClose }: HeadToHeadProps) {
     if (!selectedPlayerA || !selectedPlayerB || selectedPlayerA === selectedPlayerB) {
       return
     }
+    setHasInitialExpand(false)
     const result = calculateHeadToHead(selectedPlayerA, selectedPlayerB, playedMatches, allPlayers)
     setStats(result)
   }
 
   const matchTypeStats = stats ? getMatchTypeStats(stats) : null
+
+  // Group head-to-head matches by date for accordion
+  const getDateKey = (match: Match) =>
+    match.created_at ? match.created_at.split('T')[0] : new Date().toISOString().split('T')[0]
+  const formatDateLabel = (dateKey: string) => {
+    const d = new Date(dateKey + 'T12:00:00')
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+    if (dateKey === today.toISOString().split('T')[0]) return 'Today'
+    if (dateKey === yesterday.toISOString().split('T')[0]) return 'Yesterday'
+    return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+  }
+
+  const matchesByDate = new Map<string, typeof stats.matches>()
+  if (stats?.matches) {
+    for (const md of stats.matches) {
+      const key = getDateKey(md.match)
+      if (!matchesByDate.has(key)) matchesByDate.set(key, [])
+      matchesByDate.get(key)!.push(md)
+    }
+  }
+  const dateKeys = Array.from(matchesByDate.keys()).sort((a, b) => b.localeCompare(a))
+
+  useEffect(() => {
+    if (stats && dateKeys.length > 0 && !hasInitialExpand) {
+      setExpandedDates(new Set([dateKeys[0]]))
+      setHasInitialExpand(true)
+    }
+  }, [stats?.totalMatches, dateKeys.join(','), hasInitialExpand])
+
+  const toggleDate = (dateKey: string) => {
+    setExpandedDates((prev) => {
+      const next = new Set(prev)
+      if (next.has(dateKey)) next.delete(dateKey)
+      else next.add(dateKey)
+      return next
+    })
+  }
 
   const stageLabels: Record<string, string> = {
     play_in: 'Play-in',
@@ -86,6 +113,8 @@ export function HeadToHead({ isOpen, onClose }: HeadToHeadProps) {
     final: 'Final',
     third_place: '3rd Place',
   }
+
+  if (!isOpen) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/70 p-4">
@@ -281,54 +310,87 @@ export function HeadToHead({ isOpen, onClose }: HeadToHeadProps) {
                 </div>
               )}
 
-              {/* Match History */}
+              {/* Match History - grouped by date in accordions */}
               <div className="bg-white dark:bg-gray-700/50 rounded-card p-4 border border-gray-200 dark:border-gray-600">
                 <h4 className="font-bold text-gray-900 dark:text-gray-100 mb-3">Match History</h4>
                 <div className="space-y-2">
-                  {stats.matches.map((matchDetail, idx) => {
-                    const { match, matchType, stage, roundIndex } = matchDetail
-                    const isPlayerAFirst = match.playerAId === stats.playerAId
-                    const scoreA = isPlayerAFirst ? match.scoreA! : match.scoreB!
-                    const scoreB = isPlayerAFirst ? match.scoreB! : match.scoreA!
-                    const playerAName = isPlayerAFirst ? matchDetail.playerA.name : matchDetail.playerB.name
-                    const playerBName = isPlayerAFirst ? matchDetail.playerB.name : matchDetail.playerA.name
-
+                  {dateKeys.map((dateKey) => {
+                    const matches = matchesByDate.get(dateKey) ?? []
+                    const isExpanded = expandedDates.has(dateKey)
                     return (
                       <div
-                        key={match.id}
-                        className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-card bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600"
+                        key={dateKey}
+                        className="rounded-card border border-gray-200 dark:border-gray-600 overflow-hidden"
                       >
-                        <div className="flex-1 min-w-[200px]">
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-gray-900 dark:text-gray-100">{playerAName}</span>
-                            <span className="text-lg font-bold text-gray-700 dark:text-gray-300">
-                              {scoreA} - {scoreB}
-                            </span>
-                            <span className="font-semibold text-gray-900 dark:text-gray-100">{playerBName}</span>
+                        <button
+                          type="button"
+                          onClick={() => toggleDate(dateKey)}
+                          className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-left"
+                        >
+                          <span className="font-semibold text-gray-900 dark:text-gray-100">
+                            {formatDateLabel(dateKey)}
+                          </span>
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                            {matches.length} match{matches.length !== 1 ? 'es' : ''}
+                          </span>
+                          <span
+                            className={`inline-block text-gray-500 dark:text-gray-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                            aria-hidden
+                          >
+                            ▼
+                          </span>
+                        </button>
+                        {isExpanded && (
+                          <div className="border-t border-gray-200 dark:border-gray-600 divide-y divide-gray-200 dark:divide-gray-600">
+                            {matches.map((matchDetail) => {
+                              const { match, matchType, stage, roundIndex } = matchDetail
+                              const isPlayerAFirst = match.playerAId === stats.playerAId
+                              const scoreA = isPlayerAFirst ? match.scoreA! : match.scoreB!
+                              const scoreB = isPlayerAFirst ? match.scoreB! : match.scoreA!
+                              const playerAName = isPlayerAFirst ? matchDetail.playerA.name : matchDetail.playerB.name
+                              const playerBName = isPlayerAFirst ? matchDetail.playerB.name : matchDetail.playerA.name
+
+                              return (
+                                <div
+                                  key={match.id}
+                                  className="flex flex-wrap items-center justify-between gap-2 p-3"
+                                >
+                                  <div className="flex-1 min-w-[200px]">
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-semibold text-gray-900 dark:text-gray-100">{playerAName}</span>
+                                      <span className="text-lg font-bold text-gray-700 dark:text-gray-300">
+                                        {scoreA} - {scoreB}
+                                      </span>
+                                      <span className="font-semibold text-gray-900 dark:text-gray-100">{playerBName}</span>
+                                    </div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                      {matchType === 'group' && `Round ${roundIndex + 1}`}
+                                      {matchType === 'knockout' && stage && `${stageLabels[stage]} (Round ${roundIndex + 1})`}
+                                      {matchType === 'golden_goal' && 'Golden Goal Playoff'}
+                                    </div>
+                                  </div>
+                                  <div className="flex gap-2">
+                                    {matchType === 'group' && (
+                                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                                        Group
+                                      </span>
+                                    )}
+                                    {matchType === 'knockout' && (
+                                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-neobank-lime/20 dark:bg-neobank-lime/30 text-neobank-lime">
+                                        Knockout
+                                      </span>
+                                    )}
+                                    {matchType === 'golden_goal' && (
+                                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">
+                                        Golden Goal
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              )
+                            })}
                           </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            {matchType === 'group' && `Round ${roundIndex + 1}`}
-                            {matchType === 'knockout' && stage && `${stageLabels[stage]} (Round ${roundIndex + 1})`}
-                            {matchType === 'golden_goal' && 'Golden Goal Playoff'}
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          {matchType === 'group' && (
-                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
-                              Group
-                            </span>
-                          )}
-                          {matchType === 'knockout' && (
-                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-neobank-lime/20 dark:bg-neobank-lime/30 text-neobank-lime">
-                              Knockout
-                            </span>
-                          )}
-                          {matchType === 'golden_goal' && (
-                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">
-                              Golden Goal
-                            </span>
-                          )}
-                        </div>
+                        )}
                       </div>
                     )
                   })}

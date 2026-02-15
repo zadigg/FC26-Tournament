@@ -9,6 +9,7 @@ import { Podium } from './components/Podium'
 import { ResetConfirmationDialog } from './components/ResetConfirmationDialog'
 import { ResetHistory } from './components/ResetHistory'
 import { HeadToHead } from './components/HeadToHead'
+import { MatchHistory } from './components/MatchHistory'
 import { useDarkMode } from './hooks/useDarkMode'
 
 function AppContent() {
@@ -19,6 +20,7 @@ function AppContent() {
   const [showResetDialog, setShowResetDialog] = useState(false)
   const [showResetHistory, setShowResetHistory] = useState(false)
   const [showHeadToHead, setShowHeadToHead] = useState(false)
+  const [showMatchHistory, setShowMatchHistory] = useState(false)
   // Show tournament view only if matches exist (tournament has started)
   // If no matches exist, show setup page (even if players exist - they can be added before starting)
   const inTournament = matches.length > 0
@@ -91,6 +93,13 @@ function AppContent() {
               >
                 Head-to-Head
               </button>
+              <button
+                type="button"
+                onClick={() => setShowMatchHistory(true)}
+                className="rounded-button bg-gray-100 dark:bg-gray-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              >
+                Match History
+              </button>
               {inTournament && tournamentComplete && (
                 <button
                   type="button"
@@ -147,6 +156,10 @@ function AppContent() {
       <HeadToHead
         isOpen={showHeadToHead}
         onClose={() => setShowHeadToHead(false)}
+      />
+      <MatchHistory
+        isOpen={showMatchHistory}
+        onClose={() => setShowMatchHistory(false)}
       />
     </div>
   )

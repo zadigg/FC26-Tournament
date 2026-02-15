@@ -5,14 +5,19 @@ const ACTIVE_TOURNAMENT_ID_KEY = 'fc26-active-tournament-id'
 
 /**
  * Get or create active tournament ID
- * Uses the most recent tournament with matches, or the most recent tournament if no matches exist
- * This ensures everyone sees the same active tournament
+ * Prefers localStorage (e.g. after end/reset we set a new tournament) so we don't reuse old tournaments.
+ * Falls back to most recent match/tournament for sync across browsers.
  */
 async function getActiveTournamentId(): Promise<string | null> {
-  // Strategy: Find the tournament with the most recent match activity
-  // This ensures everyone sees the same active tournament
-  
-  // Find the tournament ID with the most recent match update
+  // Check localStorage FIRST - after end/reset we create a new tournament and set it here
+  // This ensures we use the new tournament instead of reusing the old one
+  const storedId = localStorage.getItem(ACTIVE_TOURNAMENT_ID_KEY)
+  if (storedId) {
+    const { data } = await supabase.from('tournaments').select('id').eq('id', storedId).single()
+    if (data) return storedId
+  }
+
+  // Find the tournament ID with the most recent match activity (for sync across browsers)
   const { data: recentMatch } = await supabase
     .from('matches')
     .select('tournament_id, updated_at')
@@ -22,7 +27,6 @@ async function getActiveTournamentId(): Promise<string | null> {
   
   if (recentMatch && recentMatch.tournament_id) {
     const activeId = recentMatch.tournament_id
-    // Verify tournament still exists
     const { data } = await supabase.from('tournaments').select('id').eq('id', activeId).single()
     if (data) {
       localStorage.setItem(ACTIVE_TOURNAMENT_ID_KEY, activeId)
@@ -30,11 +34,8 @@ async function getActiveTournamentId(): Promise<string | null> {
     }
   }
   
-  // If no matches exist, find the most recent tournament
-  // Check if there are any players - if yes, use the most recent tournament
   const { data: playersData } = await supabase.from('players').select('id').limit(1)
   if (playersData && playersData.length > 0) {
-    // There are players, so find the most recent tournament
     const { data: recentTournament } = await supabase
       .from('tournaments')
       .select('id')
@@ -46,14 +47,6 @@ async function getActiveTournamentId(): Promise<string | null> {
       localStorage.setItem(ACTIVE_TOURNAMENT_ID_KEY, recentTournament.id)
       return recentTournament.id
     }
-  }
-  
-  // Check localStorage as fallback (for the person who started)
-  const storedId = localStorage.getItem(ACTIVE_TOURNAMENT_ID_KEY)
-  if (storedId) {
-    // Verify it still exists
-    const { data } = await supabase.from('tournaments').select('id').eq('id', storedId).single()
-    if (data) return storedId
   }
 
   // Only create new tournament if truly no tournaments exist
@@ -110,6 +103,7 @@ export async function loadAllHistoricalMatches(): Promise<Match[]> {
       status: m.status as 'pending' | 'played' | 'golden_goal',
       isGoldenGoal: m.is_golden_goal,
       stage: m.stage as 'play_in' | 'semi' | 'final' | 'third_place' | undefined,
+      created_at: m.created_at as string | undefined,
     }))
   } catch (error) {
     console.error('Failed to load historical matches:', error)
@@ -299,11 +293,23 @@ export async function savePlayers(players: Player[], preserveExisting: boolean =
     }
 
     // Delete players that are no longer in the list (unless preserving for tournament end)
+    // NEVER delete players who have played matches - preserve for match history
     if (!preserveExisting) {
       const currentIds = new Set(players.map((p) => p.id))
-      const toDelete = (existingPlayers || []).filter((p) => !currentIds.has(p.id))
-      if (toDelete.length > 0) {
-        await supabase.from('players').delete().in('id', toDelete.map((p) => p.id))
+      const candidatesToDelete = (existingPlayers || []).filter((p) => !currentIds.has(p.id))
+      if (candidatesToDelete.length > 0) {
+        const { data: matchesWithPlayers } = await supabase
+          .from('matches')
+          .select('player_a_id, player_b_id')
+        const playerIdsWithMatches = new Set<string>()
+        ;(matchesWithPlayers || []).forEach((m) => {
+          if (m.player_a_id) playerIdsWithMatches.add(m.player_a_id)
+          if (m.player_b_id) playerIdsWithMatches.add(m.player_b_id)
+        })
+        const toDelete = candidatesToDelete.filter((p) => !playerIdsWithMatches.has(p.id))
+        if (toDelete.length > 0) {
+          await supabase.from('players').delete().in('id', toDelete.map((p) => p.id))
+        }
       }
     }
   } catch (error) {
@@ -314,9 +320,9 @@ export async function savePlayers(players: Player[], preserveExisting: boolean =
 /**
  * Save matches to Supabase
  * @param matches - Array of matches to save
- * @param preserveExisting - If true, don't delete matches not in the list (for tournament end)
+ * @param preserveExisting - If true, don't delete matches not in the list (default true to preserve history)
  */
-export async function saveMatches(matches: Match[], preserveExisting: boolean = false): Promise<void> {
+export async function saveMatches(matches: Match[], preserveExisting: boolean = true): Promise<void> {
   try {
     const tournamentId = await getActiveTournamentId()
     if (!tournamentId) return
@@ -365,7 +371,8 @@ export async function saveMatches(matches: Match[], preserveExisting: boolean = 
         .eq('id', match.id)
     }
 
-    // Delete matches that are no longer in the list (unless preserving for tournament end)
+    // Never delete matches - always preserve for match history and head-to-head
+    // (preserveExisting defaults to true; deletion would remove historical data)
     if (!preserveExisting) {
       const currentIds = new Set(matches.map((m) => m.id))
       const toDelete = (existingMatches || []).filter((m) => !currentIds.has(m.id))
@@ -439,9 +446,25 @@ export async function resetTournament(cityName: string): Promise<void> {
       })
       .eq('id', tournamentId)
     
-    // Clear the active tournament ID from localStorage so a new one can be created
-    // The next tournament will get a new tournament_id, preserving old matches
-    localStorage.removeItem(ACTIVE_TOURNAMENT_ID_KEY)
+    // Create a NEW tournament and set it as active - old tournament stays untouched
+    // This preserves all matches and players for match history / head-to-head
+    const { data: newTournament, error: createError } = await supabase
+      .from('tournaments')
+      .insert({
+        knockout_player_count: null,
+        knockout_seeds: null,
+        round_eliminations: [],
+      })
+      .select('id')
+      .single()
+
+    if (createError || !newTournament) {
+      console.error('Failed to create new tournament after reset:', createError)
+      localStorage.removeItem(ACTIVE_TOURNAMENT_ID_KEY)
+      return
+    }
+
+    localStorage.setItem(ACTIVE_TOURNAMENT_ID_KEY, newTournament.id)
   } catch (error) {
     console.error('Failed to reset tournament:', error)
   }
@@ -513,15 +536,29 @@ export async function migrateFromLocalStorage(): Promise<boolean> {
 
 /**
  * End tournament - archives current tournament and prepares for a new one
- * This preserves all matches and players for head-to-head history
- * Unlike reset, this doesn't require location and doesn't delete anything
+ * Creates a new empty tournament so old data is preserved for match history
  */
 export async function endTournament(): Promise<void> {
   try {
-    // Just clear the active tournament ID from localStorage
-    // This allows a new tournament to be created
-    // All matches and players remain in the database for historical purposes
-    localStorage.removeItem(ACTIVE_TOURNAMENT_ID_KEY)
+    // Create a NEW tournament and set it as active - old tournament stays untouched
+    // This preserves all matches and players for match history / head-to-head
+    const { data: newTournament, error } = await supabase
+      .from('tournaments')
+      .insert({
+        knockout_player_count: null,
+        knockout_seeds: null,
+        round_eliminations: [],
+      })
+      .select('id')
+      .single()
+
+    if (error || !newTournament) {
+      console.error('Failed to create new tournament after end:', error)
+      localStorage.removeItem(ACTIVE_TOURNAMENT_ID_KEY)
+      return
+    }
+
+    localStorage.setItem(ACTIVE_TOURNAMENT_ID_KEY, newTournament.id)
   } catch (error) {
     console.error('Failed to end tournament:', error)
   }
