@@ -14,6 +14,9 @@ import { getTiedPairs } from '../lib/tieBreak'
 import { determineElimination } from '../lib/elimination'
 import {
   loadTournamentState,
+  loadAllHistoricalMatches,
+  getHistoricalPlayers,
+  findPlayerByName,
   savePlayers,
   saveMatches,
   saveTournamentConfig,
@@ -22,6 +25,7 @@ import {
   endTournament as endTournamentInDB,
   migrateFromLocalStorage,
 } from '../lib/supabaseService'
+import { calculateHeadToHeadByName, getWinPrediction, type WinPrediction } from '../lib/headToHead'
 
 interface TournamentState {
   players: Player[]
@@ -42,7 +46,7 @@ type TournamentContextValue = {
   players: Player[]
   matches: Match[]
   isLoading: boolean
-  addPlayer: (name: string) => void
+  addPlayer: (name: string) => void | Promise<void>
   removePlayer: (id: string) => void
   shufflePlayers: () => void
   loadSamplePlayers: () => void
@@ -63,6 +67,7 @@ type TournamentContextValue = {
   knockoutPlayerCount: number | null
   knockoutSeeds: string[] | null
   roundEliminations: RoundElimination[]
+  getMatchPrediction: (playerAName: string, playerBName: string) => WinPrediction | null
 }
 
 const TournamentContext = createContext<TournamentContextValue | null>(null)
@@ -87,6 +92,8 @@ export function TournamentProvider({ children }: { children: ReactNode }) {
     migrationAttempted: false,
   })
   const [isLoading, setIsLoading] = useState(true)
+  const [historicalMatches, setHistoricalMatches] = useState<Match[]>([])
+  const [historicalPlayers, setHistoricalPlayers] = useState<Player[]>([])
 
   // Load initial state from Supabase
   useEffect(() => {
@@ -101,13 +108,19 @@ export function TournamentProvider({ children }: { children: ReactNode }) {
           localStorage.setItem(migrationKey, 'true')
         }
 
-        // Load from Supabase
-        const loadedState = await loadTournamentState()
+        // Load tournament state, historical matches, and historical players in parallel
+        const [loadedState, historical, histPlayers] = await Promise.all([
+          loadTournamentState(),
+          loadAllHistoricalMatches(),
+          getHistoricalPlayers(),
+        ])
         if (mounted) {
           setState({
             ...loadedState,
             migrationAttempted: true,
           })
+          setHistoricalMatches(historical)
+          setHistoricalPlayers(histPlayers)
         }
       } catch (error) {
         console.error('Failed to initialize tournament state:', error)
@@ -156,13 +169,22 @@ export function TournamentProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(timeoutId)
   }, [state.players, state.matches, state.knockoutPlayerCount, state.knockoutSeeds, state.roundEliminations, isLoading])
 
-  const addPlayer = useCallback((name: string) => {
+  const addPlayer = useCallback(async (name: string) => {
     const trimmed = name.trim()
     if (!trimmed) return
-    setState((s) => ({
-      ...s,
-      players: [...s.players, { id: makeId(), name: trimmed }],
-    }))
+    // Reuse existing player by name to avoid duplicates (e.g. "Abel" every tournament)
+    const existing = await findPlayerByName(trimmed)
+    if (existing) {
+      setState((s) => {
+        if (s.players.some((p) => p.id === existing.id || p.name.toLowerCase() === trimmed.toLowerCase())) return s
+        return { ...s, players: [...s.players, existing] }
+      })
+    } else {
+      setState((s) => ({
+        ...s,
+        players: [...s.players, { id: makeId(), name: trimmed }],
+      }))
+    }
   }, [])
 
   const removePlayer = useCallback((id: string) => {
@@ -187,12 +209,19 @@ export function TournamentProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  const loadSamplePlayers = useCallback(() => {
-    setState((s) => ({
-      ...s,
-      players: SAMPLE_PLAYER_NAMES.map((name) => ({ id: makeId(), name })),
-      matches: [],
-    }))
+  const loadSamplePlayers = useCallback(async () => {
+    const resolved: Player[] = []
+    for (const name of SAMPLE_PLAYER_NAMES) {
+      const existing = await findPlayerByName(name)
+      if (existing) {
+        if (!resolved.some((p) => p.id === existing.id || p.name.toLowerCase() === name.toLowerCase())) {
+          resolved.push(existing)
+        }
+      } else {
+        resolved.push({ id: makeId(), name })
+      }
+    }
+    setState((s) => ({ ...s, players: resolved, matches: [] }))
   }, [])
 
   const startTournament = useCallback(async () => {
@@ -974,6 +1003,27 @@ export function TournamentProvider({ children }: { children: ReactNode }) {
     [state.players, state.matches]
   )
 
+  const getMatchPrediction = useCallback(
+    (playerAName: string, playerBName: string): WinPrediction | null => {
+      const played = state.matches.filter((m) => m.scoreA !== null && m.scoreB !== null)
+      const byId = new Map<string, Match>()
+      historicalMatches.forEach((m) => byId.set(m.id, m))
+      played.forEach((m) => byId.set(m.id, m))
+      const allMatches = Array.from(byId.values())
+      const allPlayers = [...state.players]
+      const playerIds = new Set(state.players.map((p) => p.id))
+      historicalPlayers.forEach((p) => {
+        if (!playerIds.has(p.id)) {
+          allPlayers.push(p)
+          playerIds.add(p.id)
+        }
+      })
+      const stats = calculateHeadToHeadByName(playerAName, playerBName, allMatches, allPlayers)
+      return getWinPrediction(stats)
+    },
+    [historicalMatches, historicalPlayers, state.matches, state.players]
+  )
+
   const knockoutResults = useMemo((): KnockoutResults | null => {
     const finalMatch = state.matches.find((m) => m.stage === 'final')
     if (!finalMatch || finalMatch.scoreA === null || finalMatch.scoreB === null) return null
@@ -1049,12 +1099,14 @@ export function TournamentProvider({ children }: { children: ReactNode }) {
       knockoutPlayerCount: state.knockoutPlayerCount,
       knockoutSeeds: state.knockoutSeeds,
       roundEliminations: state.roundEliminations,
+      getMatchPrediction,
     }),
     [
       state.players,
       state.matches,
       state.knockoutPlayerCount,
       state.knockoutSeeds,
+      getMatchPrediction,
       addPlayer,
       removePlayer,
       shufflePlayers,

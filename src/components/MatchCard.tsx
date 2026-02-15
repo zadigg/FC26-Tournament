@@ -10,9 +10,10 @@ interface MatchCardProps {
 }
 
 export function MatchCard({ match, playerA, playerB }: MatchCardProps) {
-  const { setMatchScore } = useTournament()
+  const { setMatchScore, getMatchPrediction } = useTournament()
   const [editing, setEditing] = useState(false)
   const played = match.scoreA !== null && match.scoreB !== null
+  const prediction = !played ? getMatchPrediction(playerA.name, playerB.name) : null
 
   const handleSave = (scoreA: number, scoreB: number) => {
     setMatchScore(match.id, scoreA, scoreB)
@@ -42,6 +43,30 @@ export function MatchCard({ match, playerA, playerB }: MatchCardProps) {
         <span className="text-gray-400 dark:text-gray-500 font-medium">vs</span>
         <span className="font-semibold text-gray-900 dark:text-gray-100">{playerB.name}</span>
       </div>
+      {!played && (
+        <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+          {prediction ? (
+            <>
+              <span className="text-gray-600 dark:text-gray-400">
+                <span className="font-medium text-neobank-lime">{prediction.playerAWinPct}%</span> {playerA.name}
+              </span>
+              <span className="text-gray-500 dark:text-gray-500">
+                {prediction.drawPct}% draw
+              </span>
+              <span className="text-gray-600 dark:text-gray-400">
+                {playerB.name} <span className="font-medium text-neobank-lime">{prediction.playerBWinPct}%</span>
+              </span>
+              <span className="text-gray-400 dark:text-gray-500 italic">
+                (based on {prediction.totalMatches} previous match{prediction.totalMatches !== 1 ? 'es' : ''})
+              </span>
+            </>
+          ) : (
+            <span className="text-gray-400 dark:text-gray-500 italic">
+              No head-to-head history — first meeting
+            </span>
+          )}
+        </div>
+      )}
       {played && !editing ? (
         <div className="flex items-center justify-between">
           <span className="text-3xl font-bold text-gray-900 dark:text-gray-100">

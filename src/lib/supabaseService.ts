@@ -113,6 +113,27 @@ export async function loadAllHistoricalMatches(): Promise<Match[]> {
 }
 
 /**
+ * Find an existing player by name (case-insensitive).
+ * Returns the first match to reuse instead of creating duplicates.
+ */
+export async function findPlayerByName(name: string): Promise<Player | null> {
+  try {
+    const trimmed = name.trim()
+    if (!trimmed) return null
+    const { data, error } = await supabase
+      .from('players')
+      .select('id, name')
+      .ilike('name', trimmed)
+      .limit(1)
+
+    if (error || !data || data.length === 0) return null
+    return { id: data[0].id, name: data[0].name }
+  } catch {
+    return null
+  }
+}
+
+/**
  * Get unique player IDs and names from historical matches
  * Fetches all players that have ever played matches
  */

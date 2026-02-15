@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTournament } from '../context/TournamentContext'
-import { calculateHeadToHead, getMatchTypeStats, getAllPlayerPairs, type HeadToHeadStats } from '../lib/headToHead'
+import { calculateHeadToHeadByName, getMatchTypeStats, getUniquePlayerNames, getPlayedPairsCountByName, type HeadToHeadStats } from '../lib/headToHead'
 import { loadAllHistoricalMatches, getHistoricalPlayers } from '../lib/supabaseService'
 import type { Match, Player } from '../types'
 
@@ -53,16 +53,16 @@ export function HeadToHead({ isOpen, onClose }: HeadToHeadProps) {
 
   const allMatches = Array.from(allMatchesMap.values())
   const allPlayers = Array.from(allPlayersMap.values())
-
+  const uniqueNames = getUniquePlayerNames(allPlayers)
   const playedMatches = allMatches.filter((m) => m.scoreA !== null && m.scoreB !== null)
-  const playerPairs = getAllPlayerPairs(playedMatches, allPlayers)
+  const playedPairsCount = getPlayedPairsCountByName(playedMatches, allPlayers)
 
   const handleCompare = () => {
     if (!selectedPlayerA || !selectedPlayerB || selectedPlayerA === selectedPlayerB) {
       return
     }
     setHasInitialExpand(false)
-    const result = calculateHeadToHead(selectedPlayerA, selectedPlayerB, playedMatches, allPlayers)
+    const result = calculateHeadToHeadByName(selectedPlayerA, selectedPlayerB, playedMatches, allPlayers)
     setStats(result)
   }
 
@@ -94,7 +94,7 @@ export function HeadToHead({ isOpen, onClose }: HeadToHeadProps) {
     return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
   }
 
-  const matchesByDate = new Map<string, typeof stats.matches>()
+  const matchesByDate = new Map<string, NonNullable<typeof stats>['matches']>()
   if (stats?.matches) {
     for (const md of stats.matches) {
       const key = getDateKey(md.match)
@@ -158,9 +158,9 @@ export function HeadToHead({ isOpen, onClose }: HeadToHeadProps) {
                   className="w-full rounded-button border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2.5 text-gray-900 dark:text-gray-100 focus:border-neobank-lime focus:outline-none transition-colors disabled:opacity-50"
                 >
                   <option value="">Select Player 1</option>
-                  {allPlayers.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
+                  {uniqueNames.map(({ name }) => (
+                    <option key={name} value={name}>
+                      {name}
                     </option>
                   ))}
                 </select>
@@ -176,9 +176,9 @@ export function HeadToHead({ isOpen, onClose }: HeadToHeadProps) {
                   className="w-full rounded-button border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2.5 text-gray-900 dark:text-gray-100 focus:border-neobank-lime focus:outline-none transition-colors disabled:opacity-50"
                 >
                   <option value="">Select Player 2</option>
-                  {allPlayers.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
+                  {uniqueNames.map(({ name }) => (
+                    <option key={name} value={name}>
+                      {name}
                     </option>
                   ))}
                 </select>
@@ -433,8 +433,8 @@ export function HeadToHead({ isOpen, onClose }: HeadToHeadProps) {
               )}
               {allPlayers.length > 0 && (
                 <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
-                  {allPlayers.length} player{allPlayers.length !== 1 ? 's' : ''} available
-                  {playerPairs.length > 0 && ` • ${playerPairs.length} pair${playerPairs.length !== 1 ? 's' : ''} have played matches`}
+                  {uniqueNames.length} player{uniqueNames.length !== 1 ? 's' : ''} available
+                  {playedPairsCount > 0 && ` • ${playedPairsCount} pair${playedPairsCount !== 1 ? 's' : ''} have played matches`}
                 </p>
               )}
             </div>
