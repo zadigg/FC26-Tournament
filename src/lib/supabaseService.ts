@@ -77,6 +77,122 @@ async function getActiveTournamentId(): Promise<string | null> {
 }
 
 /**
+ * Load all historical matches from all tournaments
+ */
+export async function loadAllHistoricalMatches(): Promise<Match[]> {
+  try {
+    const { data: matchesData, error } = await supabase
+      .from('matches')
+      .select('*')
+      .not('score_a', 'is', null)
+      .not('score_b', 'is', null)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Error loading historical matches:', error)
+      return []
+    }
+
+    if (!matchesData) {
+      console.log('No historical matches found in database')
+      return []
+    }
+
+    console.log(`Loaded ${matchesData.length} historical matches from database`)
+
+    return matchesData.map((m) => ({
+      id: m.id,
+      playerAId: m.player_a_id,
+      playerBId: m.player_b_id,
+      roundIndex: m.round_index,
+      scoreA: m.score_a,
+      scoreB: m.score_b,
+      status: m.status as 'pending' | 'played' | 'golden_goal',
+      isGoldenGoal: m.is_golden_goal,
+      stage: m.stage as 'play_in' | 'semi' | 'final' | 'third_place' | undefined,
+    }))
+  } catch (error) {
+    console.error('Failed to load historical matches:', error)
+    return []
+  }
+}
+
+/**
+ * Get unique player IDs and names from historical matches
+ * Fetches all players that have ever played matches
+ */
+export async function getHistoricalPlayers(): Promise<Player[]> {
+  try {
+    // First, get all players from the players table (they should be preserved)
+    const { data: playersData, error: playersError } = await supabase
+      .from('players')
+      .select('*')
+      .order('created_at')
+
+    if (playersError) {
+      console.error('Error loading players:', playersError)
+    }
+
+    const playersMap = new Map<string, Player>()
+    
+    // Add players from players table
+    if (playersData && playersData.length > 0) {
+      console.log(`Loaded ${playersData.length} players from players table`)
+      playersData.forEach((p) => {
+        playersMap.set(p.id, {
+          id: p.id,
+          name: p.name,
+        })
+      })
+    } else {
+      console.log('No players found in players table')
+    }
+
+    // Also get unique player IDs from historical matches
+    // This ensures we include players even if they were somehow deleted from players table
+    const { data: matchesData, error: matchesError } = await supabase
+      .from('matches')
+      .select('player_a_id, player_b_id')
+      .not('score_a', 'is', null)
+      .not('score_b', 'is', null)
+
+    if (matchesError) {
+      console.error('Error loading matches for player extraction:', matchesError)
+    }
+
+    if (matchesData && matchesData.length > 0) {
+      console.log(`Found ${matchesData.length} matches for player extraction`)
+      const playerIds = new Set<string>()
+      for (const match of matchesData) {
+        if (match.player_a_id) playerIds.add(match.player_a_id)
+        if (match.player_b_id) playerIds.add(match.player_b_id)
+      }
+
+      console.log(`Extracted ${playerIds.size} unique player IDs from matches`)
+
+      // For any player IDs from matches that don't have names, create placeholder entries
+      for (const playerId of playerIds) {
+        if (!playersMap.has(playerId)) {
+          playersMap.set(playerId, {
+            id: playerId,
+            name: `Player ${playerId.slice(0, 8)}`, // Use ID as placeholder name
+          })
+        }
+      }
+    } else {
+      console.log('No matches found for player extraction')
+    }
+
+    const result = Array.from(playersMap.values())
+    console.log(`Returning ${result.length} total players (${playersData?.length || 0} from table + ${result.length - (playersData?.length || 0)} from matches)`)
+    return result
+  } catch (error) {
+    console.error('Failed to load historical players:', error)
+    return []
+  }
+}
+
+/**
  * Load all tournament data from Supabase
  */
 export async function loadTournamentState(): Promise<{
@@ -153,8 +269,10 @@ export async function loadTournamentState(): Promise<{
 
 /**
  * Save players to Supabase
+ * @param players - Array of players to save
+ * @param preserveExisting - If true, don't delete players not in the list (for tournament end)
  */
-export async function savePlayers(players: Player[]): Promise<void> {
+export async function savePlayers(players: Player[], preserveExisting: boolean = false): Promise<void> {
   try {
     // Get existing players
     const { data: existingPlayers } = await supabase.from('players').select('id')
@@ -180,11 +298,13 @@ export async function savePlayers(players: Player[]): Promise<void> {
         .eq('id', player.id)
     }
 
-    // Delete players that are no longer in the list
-    const currentIds = new Set(players.map((p) => p.id))
-    const toDelete = (existingPlayers || []).filter((p) => !currentIds.has(p.id))
-    if (toDelete.length > 0) {
-      await supabase.from('players').delete().in('id', toDelete.map((p) => p.id))
+    // Delete players that are no longer in the list (unless preserving for tournament end)
+    if (!preserveExisting) {
+      const currentIds = new Set(players.map((p) => p.id))
+      const toDelete = (existingPlayers || []).filter((p) => !currentIds.has(p.id))
+      if (toDelete.length > 0) {
+        await supabase.from('players').delete().in('id', toDelete.map((p) => p.id))
+      }
     }
   } catch (error) {
     console.error('Failed to save players:', error)
@@ -193,8 +313,10 @@ export async function savePlayers(players: Player[]): Promise<void> {
 
 /**
  * Save matches to Supabase
+ * @param matches - Array of matches to save
+ * @param preserveExisting - If true, don't delete matches not in the list (for tournament end)
  */
-export async function saveMatches(matches: Match[]): Promise<void> {
+export async function saveMatches(matches: Match[], preserveExisting: boolean = false): Promise<void> {
   try {
     const tournamentId = await getActiveTournamentId()
     if (!tournamentId) return
@@ -243,11 +365,13 @@ export async function saveMatches(matches: Match[]): Promise<void> {
         .eq('id', match.id)
     }
 
-    // Delete matches that are no longer in the list
-    const currentIds = new Set(matches.map((m) => m.id))
-    const toDelete = (existingMatches || []).filter((m) => !currentIds.has(m.id))
-    if (toDelete.length > 0) {
-      await supabase.from('matches').delete().in('id', toDelete.map((m) => m.id))
+    // Delete matches that are no longer in the list (unless preserving for tournament end)
+    if (!preserveExisting) {
+      const currentIds = new Set(matches.map((m) => m.id))
+      const toDelete = (existingMatches || []).filter((m) => !currentIds.has(m.id))
+      if (toDelete.length > 0) {
+        await supabase.from('matches').delete().in('id', toDelete.map((m) => m.id))
+      }
     }
   } catch (error) {
     console.error('Failed to save matches:', error)
@@ -288,20 +412,24 @@ export async function resetTournament(cityName: string): Promise<void> {
     const tournamentId = await getActiveTournamentId()
     if (!tournamentId) return
 
-    // Record reset history before deleting
+    // Record reset history before resetting
     await supabase.from('reset_history').insert({
       tournament_id: tournamentId,
       city_name: cityName,
       // reset_at will be automatically set by DEFAULT NOW() in the database
     })
 
-    // Delete all matches for this tournament
-    await supabase.from('matches').delete().eq('tournament_id', tournamentId)
+    // IMPORTANT: We preserve matches and players for historical head-to-head data
+    // Instead of deleting matches and players, we just clear the tournament config
+    // Matches remain in the database associated with their tournament_id
+    // When a new tournament starts, it gets a new tournament_id, so old matches won't interfere
+    // This allows head-to-head to work even after reset
+    //
+    // Previously deleted matches and players, but we preserve them now:
+    // await supabase.from('matches').delete().eq('tournament_id', tournamentId)
+    // await supabase.from('players').delete().neq('id', '')
 
-    // Delete all players
-    await supabase.from('players').delete().neq('id', '') // Delete all players
-
-    // Reset tournament config
+    // Reset tournament config (but keep the tournament record and all its matches)
     await supabase
       .from('tournaments')
       .update({
@@ -312,6 +440,7 @@ export async function resetTournament(cityName: string): Promise<void> {
       .eq('id', tournamentId)
     
     // Clear the active tournament ID from localStorage so a new one can be created
+    // The next tournament will get a new tournament_id, preserving old matches
     localStorage.removeItem(ACTIVE_TOURNAMENT_ID_KEY)
   } catch (error) {
     console.error('Failed to reset tournament:', error)
@@ -379,5 +508,21 @@ export async function migrateFromLocalStorage(): Promise<boolean> {
   } catch (error) {
     console.error('Migration failed:', error)
     return false
+  }
+}
+
+/**
+ * End tournament - archives current tournament and prepares for a new one
+ * This preserves all matches and players for head-to-head history
+ * Unlike reset, this doesn't require location and doesn't delete anything
+ */
+export async function endTournament(): Promise<void> {
+  try {
+    // Just clear the active tournament ID from localStorage
+    // This allows a new tournament to be created
+    // All matches and players remain in the database for historical purposes
+    localStorage.removeItem(ACTIVE_TOURNAMENT_ID_KEY)
+  } catch (error) {
+    console.error('Failed to end tournament:', error)
   }
 }

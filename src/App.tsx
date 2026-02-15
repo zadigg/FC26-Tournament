@@ -8,15 +8,17 @@ import { KnockoutBracket } from './components/KnockoutBracket'
 import { Podium } from './components/Podium'
 import { ResetConfirmationDialog } from './components/ResetConfirmationDialog'
 import { ResetHistory } from './components/ResetHistory'
+import { HeadToHead } from './components/HeadToHead'
 import { useDarkMode } from './hooks/useDarkMode'
 
 function AppContent() {
-  const { matches, isLoading, resetTournament } = useTournament()
+  const { matches, isLoading, resetTournament, endTournament, knockoutResults } = useTournament()
   const { isDark, toggle: toggleDarkMode } = useDarkMode()
   const [showKey, setShowKey] = useState(false)
   const [testMode, setTestMode] = useState(false)
   const [showResetDialog, setShowResetDialog] = useState(false)
   const [showResetHistory, setShowResetHistory] = useState(false)
+  const [showHeadToHead, setShowHeadToHead] = useState(false)
   // Show tournament view only if matches exist (tournament has started)
   // If no matches exist, show setup page (even if players exist - they can be added before starting)
   const inTournament = matches.length > 0
@@ -25,6 +27,14 @@ function AppContent() {
     await resetTournament(cityName)
     setShowResetDialog(false)
   }
+
+  const handleEndTournament = async () => {
+    await endTournament()
+    // Tournament ended - state will be cleared, user goes to home page
+  }
+
+  // Tournament is complete when knockout results exist (final has been played)
+  const tournamentComplete = !!knockoutResults
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
@@ -74,6 +84,22 @@ function AppContent() {
               >
                 History
               </button>
+              <button
+                type="button"
+                onClick={() => setShowHeadToHead(true)}
+                className="rounded-button bg-gray-100 dark:bg-gray-700 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              >
+                Head-to-Head
+              </button>
+              {inTournament && tournamentComplete && (
+                <button
+                  type="button"
+                  onClick={handleEndTournament}
+                  className="rounded-button bg-neobank-lime px-3 py-1.5 text-sm font-medium text-white hover:bg-neobank-lime-dark transition-colors"
+                >
+                  🏆 Tournament Ended
+                </button>
+              )}
               {inTournament && (
                 <button
                   type="button"
@@ -117,6 +143,10 @@ function AppContent() {
       <ResetHistory
         isOpen={showResetHistory}
         onClose={() => setShowResetHistory(false)}
+      />
+      <HeadToHead
+        isOpen={showHeadToHead}
+        onClose={() => setShowHeadToHead(false)}
       />
     </div>
   )

@@ -18,6 +18,7 @@ import {
   saveMatches,
   saveTournamentConfig,
   resetTournament as resetTournamentInDB,
+  endTournament as endTournamentInDB,
   migrateFromLocalStorage,
 } from '../lib/supabaseService'
 
@@ -47,6 +48,7 @@ type TournamentContextValue = {
   startTournament: () => void
   setMatchScore: (matchId: string, scoreA: number, scoreB: number) => void
   resetTournament: (cityName: string) => Promise<void>
+  endTournament: () => Promise<void>
   setKnockoutPlayerCount: (count: number) => void
   startKnockoutStage: () => void
   advanceToFinalStage: () => void
@@ -123,6 +125,15 @@ export function TournamentProvider({ children }: { children: ReactNode }) {
   // Save to Supabase whenever state changes (debounced)
   useEffect(() => {
     if (isLoading) return
+
+    // IMPORTANT: Don't save if arrays are empty - this prevents deletion of historical data
+    // When tournament ends, endTournament() explicitly saves with preserveExisting=true
+    // After that, we don't want the auto-save to delete everything
+    const isEmpty = state.players.length === 0 && state.matches.length === 0
+    if (isEmpty) {
+      console.log('Skipping auto-save: state is empty (tournament ended or not started)')
+      return
+    }
 
     const timeoutId = setTimeout(async () => {
       try {
@@ -444,6 +455,48 @@ export function TournamentProvider({ children }: { children: ReactNode }) {
       roundEliminations: [] 
     }))
   }, [])
+
+  const endTournament = useCallback(async () => {
+    // IMPORTANT: Save current state to database before ending tournament
+    // This ensures all matches and players are persisted for head-to-head history
+    // We save the CURRENT state (before clearing) to preserve everything
+    const currentPlayers = [...state.players]
+    const currentMatches = [...state.matches]
+    
+    try {
+      console.log('Saving tournament state before ending:', {
+        players: currentPlayers.length,
+        matches: currentMatches.length,
+        completedMatches: currentMatches.filter(m => m.scoreA !== null && m.scoreB !== null).length
+      })
+      
+      await Promise.all([
+        savePlayers(currentPlayers, true), // preserveExisting = true to keep all players
+        saveMatches(currentMatches, true), // preserveExisting = true to keep all matches
+        saveTournamentConfig(
+          state.knockoutPlayerCount,
+          state.knockoutSeeds,
+          state.roundEliminations
+        ),
+      ])
+      console.log('Tournament state saved successfully before ending')
+      
+      // Small delay to ensure database write completes
+      await new Promise(resolve => setTimeout(resolve, 300))
+    } catch (error) {
+      console.error('Failed to save tournament state before ending:', error)
+    }
+    
+    await endTournamentInDB()
+    setState((s) => ({ 
+      ...s, 
+      players: [],
+      matches: [], 
+      knockoutSeeds: null, 
+      knockoutPlayerCount: null, 
+      roundEliminations: [] 
+    }))
+  }, [state.players, state.matches, state.knockoutPlayerCount, state.knockoutSeeds, state.roundEliminations])
 
   const setKnockoutPlayerCount = useCallback((count: number) => {
     setState((s) => {
@@ -927,6 +980,7 @@ export function TournamentProvider({ children }: { children: ReactNode }) {
       startTournament,
       setMatchScore,
       resetTournament,
+      endTournament,
       setKnockoutPlayerCount,
       startKnockoutStage,
       advanceToFinalStage,
@@ -952,6 +1006,7 @@ export function TournamentProvider({ children }: { children: ReactNode }) {
       startTournament,
       setMatchScore,
       resetTournament,
+      endTournament,
       setKnockoutPlayerCount,
       startKnockoutStage,
       advanceToFinalStage,
